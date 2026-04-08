@@ -1,4 +1,4 @@
-package ${package}.integration
+package com.kaiqkt.magiapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.restassured.RestAssured
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -19,6 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 class IntegrationTest {
     @LocalServerPort
     var port: Int = 0
+
     @Autowired
     lateinit var mapper: ObjectMapper
 

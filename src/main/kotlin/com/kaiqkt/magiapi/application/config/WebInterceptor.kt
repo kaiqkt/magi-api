@@ -1,12 +1,12 @@
-package ${package}.application.config
+package com.kaiqkt.magiapi.application.config
 
+import com.kaiqkt.magiapi.utils.Constants.Parameters.REQUEST_ID
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.MDC
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
 import java.util.UUID
-import ${package}.utils.Constants.Parameters.REQUEST_ID
 
 @Component
 class WebInterceptor : HandlerInterceptor {
