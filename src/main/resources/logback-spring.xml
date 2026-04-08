@@ -1,0 +1,33 @@
+<configuration>
+
+    <!-- Read application name -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name"/>
+
+    <!-- Console JSON appender -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <!-- Keep only the fields you want -->
+                <timestamp/>
+                <logLevel/>
+                <message/>
+                <loggerName/>
+                <pattern>
+                    <pattern>
+                        {
+                            "app_name":"${APP_NAME}",
+                            "request_id":"%X{request_id}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+    </root>
+
+</configuration>
