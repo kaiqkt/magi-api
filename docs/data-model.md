@@ -8,9 +8,7 @@ User ─────────────────────────
                                         ▼
                                      Project ──── GitHubAccount
                                         │
-                                        ├──── EnvironmentConfig
-                                        │
-                                       Server
+                                       Server (environment obrigatório)
 ```
 
 ---
@@ -89,28 +87,14 @@ User ─────────────────────────
 
 ---
 
-### EnvironmentConfig
-
-| Campo | Tipo | Restrições |
-|---|---|---|
-| id | UUID | PK, not null |
-| project_id | UUID | FK → Project, not null |
-| environment | ENUM | not null — `dev \| hom \| prod` |
-| default_server_id | UUID | FK → Server, nullable |
-
-**Restrições:**
-- `(project_id, environment)`: unique — um ambiente por projeto
-- Criada automaticamente junto com o projeto (as 3 envs)
-
----
-
 ### Server
 
+Unifica o conceito de servidor e ambiente. Um servidor pertence a exatamente um ambiente do projeto.
+
 | Campo | Tipo | Restrições |
 |---|---|---|
 | id | UUID | PK, not null |
 | project_id | UUID | FK → Project, not null |
-| name | VARCHAR(100) | not null, min 3 chars |
 | environment | ENUM | not null — `dev \| hom \| prod` |
 | agent_token | VARCHAR(255) | unique, not null, armazenado como hash |
 | status | ENUM | not null — `active \| inactive` |
@@ -118,8 +102,8 @@ User ─────────────────────────
 | created_at | TIMESTAMP | not null |
 
 **Validações:**
-- `agent_token`: gerado pela plataforma (UUID v4 ou token seguro), nunca regerado automaticamente — apenas sob ação explícita do usuário
-- `name`: único dentro do mesmo `project_id`
+- `environment`: obrigatório — servidor só pode ser criado associado a um ambiente válido
+- `agent_token`: gerado pela plataforma, nunca regerado automaticamente — apenas sob ação explícita do usuário
 - `status` calculado para exibição: se `last_seen_at` > 5 min atrás → `offline`, caso contrário → `online`
 
 ---

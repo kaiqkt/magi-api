@@ -36,7 +36,7 @@
 ### Servidores e Agent
 
 **Features**
-- Criar servidor (por environment: dev | hom | prod)
+- Criar servidor associado a um environment (dev | hom | prod)
 - Gerar `agent_token` — exibido uma única vez
 - Exibir instruções de instalação do agent
 - Ativar / desativar servidor
