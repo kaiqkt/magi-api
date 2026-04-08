@@ -4,13 +4,14 @@ server:
 
 spring:
   application:
-    name: ${artifactId}
+    name: magi-api
 
 management:
   endpoints:
     web:
       exposure:
         include: health, prometheus
+      base-path: /
   metrics:
     tags:
-      application: ${artifactId}
+      application: magi-api

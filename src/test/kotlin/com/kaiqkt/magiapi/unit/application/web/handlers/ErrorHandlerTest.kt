@@ -1,10 +1,10 @@
-package ${package}.unit.application.web.handlers
+package com.kaiqkt.magiapi.unit.application.web.handlers
 
-import ${package}.application.exceptions.InvalidRequestException
-import ${package}.application.web.handlers.ErrorHandler
-import ${package}.application.web.responses.ErrorResponse
-import ${package}.domain.exceptions.DomainException
-import ${package}.domain.exceptions.ErrorType
+import com.kaiqkt.magiapi.application.exceptions.InvalidRequestException
+import com.kaiqkt.magiapi.application.web.handlers.ErrorHandler
+import com.kaiqkt.magiapi.application.web.responses.ErrorResponse
+import com.kaiqkt.magiapi.domain.exceptions.DomainException
+import com.kaiqkt.magiapi.domain.exceptions.ErrorType
 import io.mockk.every
 import io.mockk.mockk
 import jakarta.validation.ConstraintViolation

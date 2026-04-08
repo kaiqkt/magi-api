@@ -1,7 +1,4 @@
-package ${package}.utils
-
-import org.slf4j.MDC
-import java.util.UUID
+package com.kaiqkt.magiapi.utils
 
 object Constants {
     object Parameters {
