@@ -1,9 +1,8 @@
-package ${package}.utils
+package com.kaiqkt.magiapi.utils
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import org.springframework.stereotype.Component
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
+import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component

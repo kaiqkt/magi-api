@@ -1,4 +1,4 @@
-package ${package}.application.config
+package com.kaiqkt.magiapi.application.config
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper

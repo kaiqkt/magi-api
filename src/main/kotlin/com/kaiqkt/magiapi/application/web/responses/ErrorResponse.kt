@@ -1,4 +1,4 @@
-package ${package}.application.web.responses
+package com.kaiqkt.magiapi.application.web.responses
 
 data class ErrorResponse(
     val message: String?,

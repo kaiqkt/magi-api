@@ -1,4 +1,4 @@
-package ${package}
+package com.kaiqkt.magiapi
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

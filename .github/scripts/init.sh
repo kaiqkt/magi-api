@@ -70,13 +70,13 @@ find . -type f \
   ! -path "./.git/*" \
   ! -path "./build/*" \
   ! -path "./.gradle/*" \
-  -exec "${SED_INPLACE[@]}" "s|\${package}|$BASE_PACKAGE|g" {} +
+  -exec "${SED_INPLACE[@]}" "s|\com.kaiqkt.magiapi|$BASE_PACKAGE|g" {} +
 
 find . -type f \
   ! -path "./.git/*" \
   ! -path "./build/*" \
   ! -path "./.gradle/*" \
-  -exec "${SED_INPLACE[@]}" "s|\${artifactId}|$ARTIFACT_ID|g" {} +
+  -exec "${SED_INPLACE[@]}" "s|\magiapi|$ARTIFACT_ID|g" {} +
 
 chmod +x ./gradlew
 ./gradlew ktlintFormat
