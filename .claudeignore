@@ -1,0 +1,30 @@
+# Build and Dependencies
+build/
+.gradle/
+out/
+gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin/JVM
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE Specific
+.idea/
+.settings/
+.classpath
+.project
+*.iml
+
+# Logs and Reports
+logs/
+*.log
+build/reports/
+
+# Miscellaneous
+.DS_Store
+.env
+
+# Kotlin
+.kotlin
