@@ -10,4 +10,8 @@ object Constants {
     object Headers
 
     object Sort
+
+    object Metrics {
+        const val STATUS = "status"
+    }
 }

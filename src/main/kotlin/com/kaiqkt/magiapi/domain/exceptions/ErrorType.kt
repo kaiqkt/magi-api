@@ -1,7 +1,13 @@
 package com.kaiqkt.magiapi.domain.exceptions
 
-enum class ErrorType(
-    val message: String,
-) {
-    DEFAULT("DEFAULT"),
+import java.util.Locale.getDefault
+
+enum class ErrorType() {
+    EMAIL_ALREADY_EXISTS,
+    USER_NOT_FOUND,
+    INVALID_CREDENTIALS,
+    INVALID_TOKEN,
+    EXPIRED_TOKEN;
+
+    val message: String = toString().lowercase(getDefault()).replace("_", " ")
 }

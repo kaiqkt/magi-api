@@ -22,7 +22,7 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
     fun handleDomainException(ex: DomainException): ResponseEntity<ErrorResponse> {
         val error = ErrorResponse(ex.message, mapOf())
 
-        return ResponseEntity(error, getStatusCode(ex.type))
+        return ResponseEntity(error, ex.type.toHttpStatus())
     }
 
     @ExceptionHandler(MissingRequestHeaderException::class)
@@ -65,5 +65,13 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
     }
 
-    private fun getStatusCode(type: ErrorType): HttpStatus = HttpStatus.NOT_IMPLEMENTED
+    private fun ErrorType.toHttpStatus(): HttpStatus {
+        return when (this) {
+            ErrorType.EMAIL_ALREADY_EXISTS -> HttpStatus.CONFLICT
+            ErrorType.USER_NOT_FOUND -> HttpStatus.NOT_FOUND
+            ErrorType.INVALID_CREDENTIALS -> HttpStatus.UNAUTHORIZED
+            ErrorType.INVALID_TOKEN -> HttpStatus.UNAUTHORIZED
+            ErrorType.EXPIRED_TOKEN -> HttpStatus.UNAUTHORIZED
+        }
+    }
 }

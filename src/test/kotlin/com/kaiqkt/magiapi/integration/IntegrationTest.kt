@@ -1,6 +1,7 @@
 package com.kaiqkt.magiapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.kaiqkt.magiapi.domain.repositories.UserRepository
 import io.restassured.RestAssured
 import io.restassured.config.ObjectMapperConfig
 import io.restassured.mapper.ObjectMapperType
@@ -22,6 +23,9 @@ class IntegrationTest {
     @Autowired
     lateinit var mapper: ObjectMapper
 
+    @Autowired
+    lateinit var userRepository: UserRepository
+
     @BeforeAll
     fun before() {
         RestAssured.config =
@@ -36,5 +40,6 @@ class IntegrationTest {
 
     @BeforeEach
     fun beforeEach() {
+        userRepository.deleteAll()
     }
 }

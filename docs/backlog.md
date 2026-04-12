@@ -99,6 +99,30 @@ A detalhar quando o escopo de deploy for refinado.
 
 ---
 
+### Comunicação Magi ↔ Agent — Evolução
+
+**v1:** Long polling — agent faz `GET /agents/{id}/events`, servidor segura a conexão até ter evento ou timeout (~30s). Sem infraestrutura extra.
+
+**Futuro:** Migrar para WebSocket com Redis Pub/Sub para suportar escala horizontal:
+
+```
+Infraestrutura Magi
+┌──────────────────────────────────────────┐
+│  Magi Instance 1 ──┐                     │
+│  Magi Instance 2 ──┼──► Redis Pub/Sub    │
+│  Magi Instance N ──┘                     │
+└──────────────────────────────────────────┘
+        ▲                   ▲
+        │ WebSocket         │ WebSocket
+   Agent (srv A)       Agent (srv B)
+```
+
+- Agent abre conexão WebSocket com o Magi — não conhece Redis
+- Redis é interno ao Magi: garante que o evento chegue na instância que tem a conexão ativa do agent
+- Necessário apenas quando Magi rodar com mais de uma instância
+
+---
+
 ### Deploy e Infraestrutura
 
 - Gerenciamento de deploy (pipelines, histórico)

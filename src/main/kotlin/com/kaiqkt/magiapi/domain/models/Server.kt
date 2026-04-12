@@ -7,14 +7,14 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import com.github.f4b6a3.ulid.UlidCreator
 import java.time.LocalDateTime
-import java.util.UUID
 
 @Entity
 @Table(name = "servers")
 class Server(
     @Id
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = UlidCreator.getMonotonicUlid().toString(),
     val projectId: String = "",
     @Enumerated(EnumType.STRING)
     val environment: Environment = Environment.DEV,

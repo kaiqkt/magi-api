@@ -1,22 +1,20 @@
 CREATE TABLE users
 (
-    id            VARCHAR(36)  NOT NULL,
-    email         VARCHAR(255) NOT NULL,
+    id            VARCHAR(26)  NOT NULL,
+    email         VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name          VARCHAR(100) NOT NULL,
-    nickname      VARCHAR(30)  NOT NULL,
     created_at    TIMESTAMP    NOT NULL,
     CONSTRAINT pk_users PRIMARY KEY (id),
-    CONSTRAINT uq_users_email UNIQUE (email),
-    CONSTRAINT uq_users_nickname UNIQUE (nickname)
+    CONSTRAINT uq_users_email UNIQUE (email)
 );
 
 CREATE TABLE projects
 (
-    id         VARCHAR(36)  NOT NULL,
+    id         VARCHAR(26)  NOT NULL,
     name       VARCHAR(100) NOT NULL,
     slug       VARCHAR(50)  NOT NULL,
-    created_by VARCHAR(36)  NOT NULL,
+    created_by VARCHAR(26)  NOT NULL,
     created_at TIMESTAMP    NOT NULL,
     CONSTRAINT pk_projects PRIMARY KEY (id),
     CONSTRAINT uq_projects_slug UNIQUE (slug),
@@ -25,9 +23,9 @@ CREATE TABLE projects
 
 CREATE TABLE project_memberships
 (
-    id         VARCHAR(36) NOT NULL,
-    user_id    VARCHAR(36) NOT NULL,
-    project_id VARCHAR(36) NOT NULL,
+    id         VARCHAR(26) NOT NULL,
+    user_id    VARCHAR(26) NOT NULL,
+    project_id VARCHAR(26) NOT NULL,
     role       VARCHAR(20) NOT NULL,
     status     VARCHAR(20) NOT NULL,
     created_at TIMESTAMP   NOT NULL,
@@ -39,8 +37,8 @@ CREATE TABLE project_memberships
 
 CREATE TABLE github_accounts
 (
-    id           VARCHAR(36)  NOT NULL,
-    project_id   VARCHAR(36)  NOT NULL,
+    id           VARCHAR(26)  NOT NULL,
+    project_id   VARCHAR(26)  NOT NULL,
     account_type VARCHAR(10)  NOT NULL,
     username     VARCHAR(100) NOT NULL,
     profile_url  VARCHAR(255) NOT NULL,
@@ -53,14 +51,21 @@ CREATE TABLE github_accounts
 
 CREATE TABLE servers
 (
-    id          VARCHAR(36) NOT NULL,
-    project_id  VARCHAR(36) NOT NULL,
-    environment VARCHAR(10) NOT NULL,
-    agent_token VARCHAR(255) NOT NULL,
-    status      VARCHAR(10) NOT NULL,
+    id           VARCHAR(26)  NOT NULL,
+    project_id   VARCHAR(26)  NOT NULL,
+    environment  VARCHAR(10)  NOT NULL,
+    agent_token  VARCHAR(255) NOT NULL,
+    status       VARCHAR(10)  NOT NULL,
     last_seen_at TIMESTAMP,
-    created_at  TIMESTAMP   NOT NULL,
+    created_at   TIMESTAMP    NOT NULL,
     CONSTRAINT pk_servers PRIMARY KEY (id),
     CONSTRAINT uq_servers_agent_token UNIQUE (agent_token),
     CONSTRAINT fk_servers_project FOREIGN KEY (project_id) REFERENCES projects (id)
+);
+
+CREATE TABLE user_roles
+(
+    user_id VARCHAR(26) NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    role    VARCHAR(50) NOT NULL,
+    PRIMARY KEY (user_id, role)
 );

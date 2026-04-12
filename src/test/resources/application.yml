@@ -1,4 +1,13 @@
 ---
 spring:
   application:
-    name: magiapi
+    name: magi-api
+  datasource:
+    url: jdbc:tc:postgresql:15.3:///test_database
+  web:
+    locale: en_US
+    locale-resolver: fixed
+
+authentication:
+  access-token-ttl: 60
+  access-token-secret: k2p4/4gX5h0x/1B9Y9O2VJ6ZcfjWQmV5UQJ4cZP9YvE=

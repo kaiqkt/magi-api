@@ -6,7 +6,7 @@ Gerenciar deploys e infraestrutura de aplicações é complexo e fragmentado. Eq
 
 ## Solução
 
-Magi é uma plataforma de gerenciamento de deploy e infraestrutura que abstrai essa complexidade. O usuário gerencia tudo pela plataforma — servidores, aplicações, ambientes — sem precisar de acesso direto aos servidores. A comunicação com os servidores é feita por um **agent** que roda dentro de cada servidor e se comunica com a plataforma via polling.
+Magi é uma plataforma de gerenciamento de deploy e infraestrutura que abstrai essa complexidade. O usuário gerencia tudo pela plataforma — servidores, aplicações, ambientes — sem precisar de acesso direto aos servidores. A comunicação com os servidores é feita por um **agent** que roda dentro de cada servidor e se comunica com a plataforma via long polling (v1). A evolução para WebSocket com Redis Pub/Sub está no radar para quando escala horizontal for necessária.
 
 Referência de inspiração: [Coolify](https://coolify.io)
 
