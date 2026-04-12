@@ -1,6 +1,5 @@
 package com.kaiqkt.magiapi.application.config
 
-import com.kaiqkt.magiapi.utils.Constants
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.MDC
@@ -17,7 +16,7 @@ class WebInterceptor : HandlerInterceptor {
     ): Boolean {
         val requestId: String = request.getHeader("X-Request-Id") ?: UUID.randomUUID().toString()
 
-        MDC.put(Constants.Parameters.REQUEST_ID, requestId)
+        MDC.put("request_id", requestId)
 
         return true
     }

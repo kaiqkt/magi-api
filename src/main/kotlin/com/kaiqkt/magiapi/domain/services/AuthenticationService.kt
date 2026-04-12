@@ -5,8 +5,8 @@ import com.kaiqkt.magiapi.domain.exceptions.DomainException
 import com.kaiqkt.magiapi.domain.exceptions.ErrorType
 import com.kaiqkt.magiapi.utils.TokenUtils
 import org.springframework.beans.factory.annotation.Value
-import com.kaiqkt.magiapi.utils.Constants.Metrics.STATUS
 import com.kaiqkt.magiapi.utils.MetricsUtils
+import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.STATUS
 import com.kaiqkt.magiapi.utils.PasswordEncrypt
 import org.springframework.stereotype.Service
 
@@ -35,6 +35,8 @@ class AuthenticationService(
                 roles = user.roles,
                 secret = secret,
             )
+
+        metricsUtils.counter(AUTHENTICATION, STATUS, "authenticated")
 
         return authentication
     }

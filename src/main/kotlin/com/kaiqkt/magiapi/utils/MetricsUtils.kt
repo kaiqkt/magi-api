@@ -53,4 +53,9 @@ class MetricsUtils(
 
         return responseResult
     }
+
+    companion object {
+        const val STATUS = "status"
+        const val CREATED = "created"
+    }
 }

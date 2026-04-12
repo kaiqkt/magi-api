@@ -4,8 +4,9 @@ import com.kaiqkt.magiapi.domain.exceptions.DomainException
 import com.kaiqkt.magiapi.domain.exceptions.ErrorType
 import com.kaiqkt.magiapi.domain.models.User
 import com.kaiqkt.magiapi.domain.repositories.UserRepository
-import com.kaiqkt.magiapi.utils.Constants.Metrics.STATUS
 import com.kaiqkt.magiapi.utils.MetricsUtils
+import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.CREATED
+import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.STATUS
 import org.springframework.stereotype.Service
 
 @Service
@@ -21,7 +22,7 @@ class UserService(
 
         userRepository.save(user)
 
-        metricsUtils.counter(USER, STATUS, "created")
+        metricsUtils.counter(USER, STATUS, CREATED)
     }
 
     fun findByEmail(email: String): User {
