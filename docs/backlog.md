@@ -19,7 +19,7 @@
 ### Projeto
 
 **Features**
-- Criar projeto (gera slug único a partir do name)
+- Criar projeto (gera tenant id único a partir do name)
 - Gerenciar membros (convidar, remover, alterar role)
 - Associar conta GitHub via OAuth
 - Gerenciar servidores

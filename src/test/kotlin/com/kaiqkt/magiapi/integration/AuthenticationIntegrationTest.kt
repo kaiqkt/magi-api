@@ -1,6 +1,6 @@
 package com.kaiqkt.magiapi.integration
 
-import com.kaiqkt.magiapi.application.web.requests.LoginRequest
+import com.kaiqkt.magiapi.application.web.requests.AuthenticationRequest
 import com.kaiqkt.magiapi.application.web.responses.ErrorResponse
 import com.kaiqkt.magiapi.application.web.responses.LoginResponse
 import com.kaiqkt.magiapi.domain.models.User
@@ -24,7 +24,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
 
             @Test
             fun `given a non-existent email when authenticating then return 404 not found`() {
-                val request = LoginRequest(
+                val request = AuthenticationRequest(
                     email = "nonexistent@example.com",
                     password = "Secret123!",
                 )
@@ -32,7 +32,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .contentType(ContentType.JSON)
                     .body(request)
-                    .post("/v1/login")
+                    .post("/v1/auth")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -51,7 +51,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
                     )
                 )
 
-                val request = LoginRequest(
+                val request = AuthenticationRequest(
                     email = "john@example.com",
                     password = "WrongPass123!",
                 )
@@ -59,7 +59,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .contentType(ContentType.JSON)
                     .body(request)
-                    .post("/v1/login")
+                    .post("/v1/auth")
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED)
                     .extract()
@@ -82,7 +82,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
                     )
                 )
 
-                val request = LoginRequest(
+                val request = AuthenticationRequest(
                     email = "john@example.com",
                     password = "Secret123!",
                 )
@@ -90,7 +90,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .contentType(ContentType.JSON)
                     .body(request)
-                    .post("/v1/login")
+                    .post("/v1/auth")
                     .then()
                     .statusCode(HttpStatus.SC_OK)
                     .extract()

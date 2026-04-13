@@ -12,7 +12,8 @@ class Project(
     @Id
     val id: String = UlidCreator.getMonotonicUlid().toString(),
     val name: String = "",
-    val slug: String = "",
     val createdBy: String = "",
     val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+    val tenantId: String = name.replace(" ", "-").lowercase()
+}

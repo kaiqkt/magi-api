@@ -37,16 +37,16 @@ User ─────────────────────────
 
 ### Project
 
-| Campo | Tipo | Restrições |
-|---|---|---|
-| id | UUID | PK, not null |
-| name | VARCHAR(100) | not null, min 3 chars |
-| slug | VARCHAR(50) | unique, not null, min 3 chars |
+| Campo      | Tipo | Restrições |
+|------------|---|---|
+| id         | UUID | PK, not null |
+| name       | VARCHAR(100) | not null, min 3 chars |
+| tenant     | VARCHAR(50) | unique, not null, min 3 chars |
 | created_by | UUID | FK → User, not null |
 | created_at | TIMESTAMP | not null |
 
 **Validações:**
-- `slug`: gerado automaticamente a partir do `name`, regex `^[a-z0-9-]{3,50}$`, único globalmente
+- `tenant`: gerado automaticamente a partir do `name`, regex `^[a-z0-9-]{3,50}$`, único globalmente
 - `name`: sem leading/trailing whitespace
 
 ---

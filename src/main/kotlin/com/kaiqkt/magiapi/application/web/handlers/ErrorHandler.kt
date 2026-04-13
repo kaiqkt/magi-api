@@ -68,10 +68,13 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
     private fun ErrorType.toHttpStatus(): HttpStatus {
         return when (this) {
             ErrorType.EMAIL_ALREADY_EXISTS -> HttpStatus.CONFLICT
+            ErrorType.PROJECT_ALREADY_EXIST -> HttpStatus.CONFLICT
             ErrorType.USER_NOT_FOUND -> HttpStatus.NOT_FOUND
+            ErrorType.PROJECT_NOT_FOUND -> HttpStatus.NOT_FOUND
             ErrorType.INVALID_CREDENTIALS -> HttpStatus.UNAUTHORIZED
             ErrorType.INVALID_TOKEN -> HttpStatus.UNAUTHORIZED
             ErrorType.EXPIRED_TOKEN -> HttpStatus.UNAUTHORIZED
+            ErrorType.INSUFFICIENT_PERMISSION -> HttpStatus.FORBIDDEN
         }
     }
 }

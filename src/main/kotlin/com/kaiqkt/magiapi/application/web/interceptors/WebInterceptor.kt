@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.application.config
+package com.kaiqkt.magiapi.application.web.interceptors
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

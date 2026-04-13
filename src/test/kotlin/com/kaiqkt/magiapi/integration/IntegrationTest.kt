@@ -1,7 +1,11 @@
 package com.kaiqkt.magiapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.kaiqkt.magiapi.domain.models.enums.Role
+import com.kaiqkt.magiapi.domain.repositories.ProjectMemberShipRepository
+import com.kaiqkt.magiapi.domain.repositories.ProjectRepository
 import com.kaiqkt.magiapi.domain.repositories.UserRepository
+import com.kaiqkt.magiapi.utils.TokenUtils
 import io.restassured.RestAssured
 import io.restassured.config.ObjectMapperConfig
 import io.restassured.mapper.ObjectMapperType
@@ -9,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -26,6 +31,15 @@ class IntegrationTest {
     @Autowired
     lateinit var userRepository: UserRepository
 
+    @Autowired
+    lateinit var projectRepository: ProjectRepository
+
+    @Autowired
+    lateinit var membershipRepository: ProjectMemberShipRepository
+
+    @Value($$"${authentication.access-token-secret}")
+    lateinit var secret: String
+
     @BeforeAll
     fun before() {
         RestAssured.config =
@@ -40,6 +54,16 @@ class IntegrationTest {
 
     @BeforeEach
     fun beforeEach() {
+        membershipRepository.deleteAll()
+        projectRepository.deleteAll()
         userRepository.deleteAll()
     }
+
+    fun generateToken(userId: String): String =
+        TokenUtils.signJWT(
+            subject = userId,
+            ttl = 3600,
+            roles = setOf(Role.USER),
+            secret = secret,
+        )
 }

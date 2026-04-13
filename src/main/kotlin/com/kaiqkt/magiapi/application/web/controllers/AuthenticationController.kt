@@ -1,6 +1,6 @@
 package com.kaiqkt.magiapi.application.web.controllers
 
-import com.kaiqkt.magiapi.application.web.requests.LoginRequest
+import com.kaiqkt.magiapi.application.web.requests.AuthenticationRequest
 import com.kaiqkt.magiapi.application.web.responses.LoginResponse
 import com.kaiqkt.magiapi.application.web.responses.toResponse
 import com.kaiqkt.magiapi.domain.services.AuthenticationService
@@ -14,8 +14,8 @@ class AuthenticationController(
     private val authenticationService: AuthenticationService
 ) {
 
-    @PostMapping("/v1/login")
-    fun login(@RequestBody request: LoginRequest): ResponseEntity<LoginResponse> {
+    @PostMapping("/v1/auth")
+    fun login(@RequestBody request: AuthenticationRequest): ResponseEntity<LoginResponse> {
         val authentication = authenticationService.authenticate(request.email, request.password)
 
         return ResponseEntity.ok(authentication.toResponse())

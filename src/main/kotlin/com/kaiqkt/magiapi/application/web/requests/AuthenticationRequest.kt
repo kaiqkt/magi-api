@@ -1,6 +1,6 @@
 package com.kaiqkt.magiapi.application.web.requests
 
-data class LoginRequest(
+data class AuthenticationRequest(
     val email: String,
     val password: String
 )

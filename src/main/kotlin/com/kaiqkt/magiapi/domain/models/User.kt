@@ -6,6 +6,7 @@ import jakarta.persistence.ElementCollection
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.Column
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
@@ -24,6 +25,6 @@ class User(
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = [JoinColumn(name = "user_id")])
     @Enumerated(EnumType.STRING)
-    val roles: Set<Role> = setOf(Role.USER),
+    val roles: MutableSet<Role> = mutableSetOf(Role.USER),
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )

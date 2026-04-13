@@ -13,11 +13,11 @@ CREATE TABLE projects
 (
     id         VARCHAR(26)  NOT NULL,
     name       VARCHAR(100) NOT NULL,
-    slug       VARCHAR(50)  NOT NULL,
+    tenant_id  VARCHAR(50)  NOT NULL,
     created_by VARCHAR(26)  NOT NULL,
     created_at TIMESTAMP    NOT NULL,
     CONSTRAINT pk_projects PRIMARY KEY (id),
-    CONSTRAINT uq_projects_slug UNIQUE (slug),
+    CONSTRAINT uq_projects_tenant_id UNIQUE (tenant_id),
     CONSTRAINT fk_projects_created_by FOREIGN KEY (created_by) REFERENCES users (id)
 );
 
@@ -66,6 +66,6 @@ CREATE TABLE servers
 CREATE TABLE user_roles
 (
     user_id VARCHAR(26) NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    role    VARCHAR(50) NOT NULL,
-    PRIMARY KEY (user_id, role)
+    roles    VARCHAR(50) NOT NULL,
+    PRIMARY KEY (user_id, roles)
 );
