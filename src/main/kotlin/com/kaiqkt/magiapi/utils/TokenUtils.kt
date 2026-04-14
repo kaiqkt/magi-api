@@ -76,17 +76,17 @@ object TokenUtils {
 
             val verifier = MACVerifier(secret.toByteArray())
             if (!signedJWT.verify(verifier)) {
-                throw DomainException(ErrorType.INVALID_TOKEN)
+                throw DomainException(ErrorType.INVALID_ACCESS_TOKEN)
             }
             val jwtClaimsSet = signedJWT.jwtClaimsSet
 
             if (jwtClaimsSet.expirationTime.before(Date())) {
-                throw DomainException(ErrorType.EXPIRED_TOKEN)
+                throw DomainException(ErrorType.EXPIRED_ACCESS_TOKEN)
             }
 
             return jwtClaimsSet
         } catch (_: ParseException) {
-            throw DomainException(ErrorType.INVALID_TOKEN)
+            throw DomainException(ErrorType.INVALID_ACCESS_TOKEN)
         }
     }
 }

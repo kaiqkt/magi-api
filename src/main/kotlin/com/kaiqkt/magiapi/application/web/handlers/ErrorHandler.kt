@@ -72,9 +72,11 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
             ErrorType.USER_NOT_FOUND -> HttpStatus.NOT_FOUND
             ErrorType.PROJECT_NOT_FOUND -> HttpStatus.NOT_FOUND
             ErrorType.INVALID_CREDENTIALS -> HttpStatus.UNAUTHORIZED
-            ErrorType.INVALID_TOKEN -> HttpStatus.UNAUTHORIZED
-            ErrorType.EXPIRED_TOKEN -> HttpStatus.UNAUTHORIZED
+            ErrorType.INVALID_ACCESS_TOKEN -> HttpStatus.UNAUTHORIZED
+            ErrorType.EXPIRED_ACCESS_TOKEN -> HttpStatus.UNAUTHORIZED
             ErrorType.INSUFFICIENT_PERMISSION -> HttpStatus.FORBIDDEN
+            ErrorType.MEMBERSHIP_NOT_FOUND -> HttpStatus.NOT_FOUND
+            ErrorType.INVALID_GIT_ACCESS_TOKEN -> HttpStatus.UNAUTHORIZED
         }
     }
 }

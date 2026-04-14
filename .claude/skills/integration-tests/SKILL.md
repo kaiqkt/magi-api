@@ -151,6 +151,81 @@ fun `given a duplicate email when creating user then return 409 conflict`() {
 
 ---
 
+## Mocking External HTTP APIs with MockServer
+
+When an endpoint calls an external HTTP API, mock it using a dedicated helper that extends `MockServerHolder`.
+
+### How it works
+
+- `MockServerHolder` is an abstract class that starts a `ClientAndServer` singleton on port 8081.
+- Each external API gets its own `object` helper (e.g., `GithubHelper`) that extends `MockServerHolder` and lives under `src/test/kotlin/.../integration/resources/`.
+- The test `application.yml` must point the API client base URL to `http://127.0.0.1:8081`.
+- `IntegrationTest.beforeEach` must call `<Helper>.reset()` to clear recorded expectations between tests.
+
+### Helper structure
+
+```kotlin
+object GithubHelper : MockServerHolder() {
+    override fun domainPath(): String = "/user"
+
+    fun mockGetUserSuccessfully(response: GithubUserResponse) {
+        mockServer()
+            .`when`(
+                HttpRequest.request()
+                    .withMethod("POST")
+                    .withPath("/user"),
+            )
+            .respond(
+                HttpResponse.response()
+                    .withStatusCode(HttpStatus.OK.value())
+                    .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
+                    .withBody(objectMapper.writeValueAsString(response)),
+            )
+    }
+
+    fun mockGetUserUnauthorized() {
+        mockServer()
+            .`when`(
+                HttpRequest.request()
+                    .withMethod("POST")
+                    .withPath("/user"),
+            )
+            .respond(
+                HttpResponse.response()
+                    .withStatusCode(HttpStatus.UNAUTHORIZED.value()),
+            )
+    }
+}
+```
+
+### Test usage
+
+```kotlin
+@Test
+fun `given an invalid github access token when creating git account then return 401 unauthorized`() {
+    // Arrange
+    GithubHelper.mockGetUserUnauthorized()
+
+    // Act + Assert
+    given()
+        .header("Authorization", "Bearer ${generateToken(userId)}")
+        .header("Host", "my-project.localhost.com")
+        .put("/v1/projects/git?access_token=invalid-token")
+        .then()
+        .statusCode(HttpStatus.SC_UNAUTHORIZED)
+}
+```
+
+### Rules
+
+- One `object` helper per external API domain (e.g., `GithubHelper`, `SlackHelper`).
+- Each helper method mocks exactly one scenario — one method per response variant.
+- Always call `<Helper>.reset()` in `beforeEach` so expectations do not leak between tests.
+- Add `<api>.url: http://127.0.0.1:8081` to `src/test/resources/application.yml` for each mocked client.
+- Never use MockServer for internal services — only for real external HTTP dependencies.
+
+---
+
 ## Reviewing Existing Tests
 
 When asked to review or fix existing integration tests:

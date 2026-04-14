@@ -7,9 +7,11 @@ import com.kaiqkt.magiapi.application.web.requests.toDomain
 import com.kaiqkt.magiapi.domain.services.ProjectService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -30,6 +32,16 @@ class ProjectController(
         val tenantId = TenantContext.getTenant() ?: return ResponseEntity.badRequest().build()
 
         projectService.invite(userId, tenantId, guestId)
+
+        return ResponseEntity.noContent().build()
+    }
+
+    @PutMapping("/v1/projects/git")
+    fun createGitAccount(@RequestParam("access_token") accessToken: String): ResponseEntity<Unit> {
+        val userId = SecurityContext.getUserId()
+        val tenantId = TenantContext.getTenant() ?: return ResponseEntity.badRequest().build()
+
+        projectService.createGitAccount(tenantId, userId, accessToken)
 
         return ResponseEntity.noContent().build()
     }

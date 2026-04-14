@@ -35,7 +35,7 @@ CREATE TABLE project_memberships
     CONSTRAINT fk_project_memberships_project FOREIGN KEY (project_id) REFERENCES projects (id)
 );
 
-CREATE TABLE github_accounts
+CREATE TABLE git_accounts
 (
     id           VARCHAR(26)  NOT NULL,
     project_id   VARCHAR(26)  NOT NULL,

@@ -21,7 +21,7 @@
 **Features**
 - Criar projeto (gera tenant id único a partir do name)
 - Gerenciar membros (convidar, remover, alterar role)
-- Associar conta GitHub via OAuth
+- Associar conta GitHub (receber e validar access token)
 - Gerenciar servidores
 
 **Regras**
@@ -29,7 +29,9 @@
 - Repositórios devem pertencer a essa conta
 - Apenas `owner` e `admin` podem associar GitHub e criar servidores
 - Isolamento total por `project_id`
-- GitHub OAuth: permissões mínimas necessárias — `repo`
+- GitHub OAuth é responsabilidade da `api-cli` — ela executa o fluxo completo e entrega o access token ao Magi
+- Magi recebe o access token e valida que ele é válido antes de persistir
+- Permissões mínimas necessárias no token — `repo`
 
 ---
 
@@ -74,6 +76,22 @@ Internet ──► API Gateway ──► Magi API
 ```
 
 > Tecnologia ainda não definida (Kong, Traefik, custom). A API deve ser desenhada considerando este layer.
+
+**Evolução do tenant resolution:**
+
+Atualmente o `tenantId` é extraído diretamente do subdomínio do `Host` header no próprio backend (`TenantFilter`). Isso é temporário.
+
+A mudança planejada:
+- O **Gateway** intercepta o subdomínio, resolve para um tenant ID real e o injeta como header na requisição para o backend
+- O backend passa a confiar no header vindo do Gateway em vez de fazer a extração do host
+- O campo `tenantId` no `Project` volta a ser apenas o **slug** (ex: `"my-project"`)
+- Um **ID dedicado** será criado especificamente para identificar o tenant (separado do slug e do `project.id`)
+
+```
+Client → Gateway (resolve host → tenantId real) → Magi API (lê tenantId do header)
+```
+
+Impacto no código: `TenantFilter` e `TenantContext` serão substituídos por leitura de header; o model `Project` ganhará um campo `tenantId` explícito como identificador único do tenant.
 
 ---
 

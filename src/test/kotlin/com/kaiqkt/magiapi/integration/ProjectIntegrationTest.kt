@@ -7,6 +7,8 @@ import com.kaiqkt.magiapi.domain.models.ProjectMembership
 import com.kaiqkt.magiapi.domain.models.User
 import com.kaiqkt.magiapi.domain.models.enums.MemberRole
 import com.kaiqkt.magiapi.domain.models.enums.MemberStatus
+import com.kaiqkt.magiapi.integration.resources.GithubHelper
+import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
 import org.apache.http.HttpStatus
@@ -208,7 +210,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                     .extract()
                     .`as`(ErrorResponse::class.java)
 
-                assertEquals("user not found", response.message)
+                assertEquals("membership not found", response.message)
             }
 
             @Test
@@ -258,6 +260,146 @@ class ProjectIntegrationTest : IntegrationTest() {
                 assertEquals(project.id, guestMembership?.projectId)
                 assertEquals(MemberRole.MEMBER, guestMembership?.role)
                 assertEquals(MemberStatus.ACTIVE, guestMembership?.status)
+            }
+        }
+    }
+
+    @Nested
+    inner class GitAccountCreation {
+
+        @Nested
+        inner class Auth {
+
+            @Test
+            fun `given an unauthenticated request when creating git account then return 401 unauthorized`() {
+                given()
+                    .header("Host", "my-project.localhost.com")
+                    .put("/v1/projects/git?access_token=some-token")
+                    .then()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
+            }
+        }
+
+        @Nested
+        inner class RequestValidation {
+
+            @Test
+            fun `given a request without tenant when creating git account then return 400 bad request`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+
+                given()
+                    .header("Authorization", "Bearer ${generateToken(owner.id)}")
+                    .put("/v1/projects/git?access_token=some-token")
+                    .then()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST)
+            }
+        }
+
+        @Nested
+        inner class BusinessRules {
+
+            @Test
+            fun `given a non-existent project when creating git account then return 404 not found`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(owner.id)}")
+                    .header("Host", "unknown-project.localhost.com")
+                    .put("/v1/projects/git?access_token=some-token")
+                    .then()
+                    .statusCode(HttpStatus.SC_NOT_FOUND)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("project not found", response.message)
+            }
+
+            @Test
+            fun `given a requester without membership when creating git account then return 404 not found`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+                val requester = userRepository.save(User(email = "requester@example.com", passwordHash = "hash", name = "Requester"))
+                projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(requester.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .put("/v1/projects/git?access_token=some-token")
+                    .then()
+                    .statusCode(HttpStatus.SC_NOT_FOUND)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("membership not found", response.message)
+            }
+
+            @Test
+            fun `given a requester with member role when creating git account then return 403 forbidden`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+                val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER, status = MemberStatus.ACTIVE)
+                )
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(member.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .put("/v1/projects/git?access_token=some-token")
+                    .then()
+                    .statusCode(HttpStatus.SC_FORBIDDEN)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("insufficient permission", response.message)
+            }
+
+            @Test
+            fun `given an invalid github access token when creating git account then return 401 unauthorized`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                )
+                GithubHelper.mockGetUserUnauthorized()
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(owner.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .put("/v1/projects/git?access_token=invalid-token")
+                    .then()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("invalid git access token", response.message)
+            }
+        }
+
+        @Nested
+        inner class HappyPath {
+
+            @Test
+            fun `given a valid github access token and owner membership when creating git account then return 204 and persist git account`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                )
+                val githubUser = GithubUserResponse(login = "octocat", htmlUrl = "https://github.com/octocat")
+                GithubHelper.mockGetUserSuccessfully(githubUser)
+
+                given()
+                    .header("Authorization", "Bearer ${generateToken(owner.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .put("/v1/projects/git?access_token=valid-token")
+                    .then()
+                    .statusCode(HttpStatus.SC_NO_CONTENT)
+
+                val gitAccount = gitAccountRepository.findByProjectId(project.id)
+                assertEquals(project.id, gitAccount?.projectId)
+                assertEquals("octocat", gitAccount?.username)
+                assertEquals("https://github.com/octocat", gitAccount?.profileUrl)
+                assertEquals("valid-token", gitAccount?.accessToken)
             }
         }
     }

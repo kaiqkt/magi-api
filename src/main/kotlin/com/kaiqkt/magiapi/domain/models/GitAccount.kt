@@ -10,8 +10,8 @@ import com.github.f4b6a3.ulid.UlidCreator
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "github_accounts")
-class GitHubAccount(
+@Table(name = "git_accounts")
+class GitAccount(
     @Id
     val id: String = UlidCreator.getMonotonicUlid().toString(),
     val projectId: String = "",

@@ -2,9 +2,11 @@ package com.kaiqkt.magiapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kaiqkt.magiapi.domain.models.enums.Role
+import com.kaiqkt.magiapi.domain.repositories.GitAccountRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectMemberShipRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectRepository
 import com.kaiqkt.magiapi.domain.repositories.UserRepository
+import com.kaiqkt.magiapi.integration.resources.GithubHelper
 import com.kaiqkt.magiapi.utils.TokenUtils
 import io.restassured.RestAssured
 import io.restassured.config.ObjectMapperConfig
@@ -37,6 +39,9 @@ class IntegrationTest {
     @Autowired
     lateinit var membershipRepository: ProjectMemberShipRepository
 
+    @Autowired
+    lateinit var gitAccountRepository: GitAccountRepository
+
     @Value($$"${authentication.access-token-secret}")
     lateinit var secret: String
 
@@ -54,7 +59,9 @@ class IntegrationTest {
 
     @BeforeEach
     fun beforeEach() {
+        GithubHelper.reset()
         membershipRepository.deleteAll()
+        gitAccountRepository.deleteAll()
         projectRepository.deleteAll()
         userRepository.deleteAll()
     }

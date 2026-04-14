@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service
 class ProjectService(
     private val projectRepository: ProjectRepository,
     private val membershipRepository: ProjectMemberShipRepository,
+    private val gitService: GitService,
     private val metricsUtils: MetricsUtils
 ) {
 
@@ -41,11 +42,10 @@ class ProjectService(
     }
 
     fun invite(userId: String, tenantId: String, guestId: String) {
-        val project = projectRepository.findByTenantId(tenantId) ?: throw DomainException(ErrorType.PROJECT_NOT_FOUND)
-        val membership = membershipRepository.findByUserIdAndProjectId(userId, project.id)
-            ?: throw DomainException(ErrorType.USER_NOT_FOUND)
+        val project = findByTenantId(tenantId)
+        val membership = findMembership(project.id, userId)
 
-        if (membership.role !in setOf(MemberRole.OWNER, MemberRole.ADMIN)) {
+        if (!membership.hasPermission()) {
             metricsUtils.counter(PROJECT_INVITE, STATUS, "insufficient_permissions")
 
             throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
@@ -63,8 +63,31 @@ class ProjectService(
         membershipRepository.save(newMembership)
     }
 
+    private fun findByTenantId(tenantId: String): Project {
+        return projectRepository.findByTenantId(tenantId) ?: throw DomainException(ErrorType.PROJECT_NOT_FOUND)
+    }
+
+    private fun findMembership(projectId: String, userId: String): ProjectMembership {
+       return membershipRepository.findByUserIdAndProjectId(userId, projectId)
+            ?: throw DomainException(ErrorType.MEMBERSHIP_NOT_FOUND)
+    }
+
+    fun createGitAccount(tenantId: String, userId: String, accessToken: String) {
+        val project = findByTenantId(tenantId)
+        val membership = findMembership(project.id, userId)
+
+        if (!membership.hasPermission()) {
+            metricsUtils.counter(PROJECT_GIT_ACCOUNT, STATUS, "insufficient_permissions")
+
+            throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
+        }
+
+        gitService.create(accessToken, project.id)
+    }
+
     companion object {
         private const val PROJECT = "project"
         private const val PROJECT_INVITE = "project_invite"
+        private const val PROJECT_GIT_ACCOUNT = "project_git_account"
     }
 }
