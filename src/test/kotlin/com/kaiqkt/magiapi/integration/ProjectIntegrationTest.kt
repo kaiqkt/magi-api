@@ -28,7 +28,7 @@ class ProjectIntegrationTest : IntegrationTest() {
             fun `given a request with name exceeding max length when creating project then return 400 bad request`() {
                 val user = userRepository.save(User(email = "john@example.com", passwordHash = "hash", name = "John Doe"))
 
-                val request = ProjectRequest.Create(name = "a".repeat(101))
+                val request = ProjectRequest.Create(name = "a".repeat(51))
 
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
@@ -41,7 +41,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                     .`as`(ErrorResponse::class.java)
 
                 assertEquals("Invalid method arguments", response.message)
-                assertEquals("must not exceed 100 characters", response.details["name"])
+                assertEquals("must not exceed 50 characters", response.details["name"])
             }
 
             @Test

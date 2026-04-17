@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.kaiqkt.magiapi.resources.exceptions.UnexpectedResourceException
+import com.kaiqkt.magiapi.resources.github.requests.GithubRepositoryRequest
+import com.kaiqkt.magiapi.resources.github.responses.GithubRepositoryResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
 import com.kaiqkt.magiapi.utils.MetricsUtils
 import org.springframework.beans.factory.annotation.Value
@@ -20,7 +22,7 @@ class GithubClient(
 ) {
     fun getUser(accessToken: String): GithubUserResponse? {
         val (_, response, result) =
-            metricsUtils.request("github_auth") {
+            metricsUtils.request(GITHUB_GET_USER) {
                 Fuel
                     .post("$apiUrl/user")
                     .header(
@@ -38,5 +40,34 @@ class GithubClient(
             response.statusCode == 401 || response.statusCode == 403 -> null
             else -> throw UnexpectedResourceException("Fail to get user ${response.responseMessage}")
         }
+    }
+
+    fun createRepository(request: GithubRepositoryRequest, accessToken: String): GithubRepositoryResponse {
+        val (_, response, result) =
+            metricsUtils.request(GITHUB_CREATE_REPO) {
+                Fuel
+                    .post("$apiUrl/user/repos")
+                    .header(
+                        mapOf(
+                            "Content-Type" to MediaType.APPLICATION_JSON,
+                            "Accept" to MediaType.APPLICATION_JSON,
+                            "Authorization" to "Bearer $accessToken",
+                        ),
+                    ).body(mapper.writeValueAsString(request))
+                    .response()
+            }
+
+        return when {
+            response.isSuccessful -> {
+                mapper.readValue(response.body().toByteArray(), GithubRepositoryResponse::class.java)
+            }
+
+            else -> throw UnexpectedResourceException("Fail to create github repository ${response.responseMessage}")
+        }
+    }
+
+    companion object {
+        private const val GITHUB_GET_USER = "github_get_user"
+        private const val GITHUB_CREATE_REPO = "github_create_repository"
     }
 }

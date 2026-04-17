@@ -55,17 +55,17 @@ class ServerService(
     @Transactional
     fun activate(serverId: String) {
         serverRepository.updateStatus(serverId, ServerStatus.ACTIVE)
-        metricsUtils.counter(SERVER, STATUS, "connected")
+        metricsUtils.counter(SERVER_CONNECTION, STATUS, "active")
     }
 
     @Transactional
     fun deactivate(serverId: String) {
         serverRepository.updateStatus(serverId, ServerStatus.INACTIVE)
-        metricsUtils.counter(SERVER, STATUS, "disconnected")
+        metricsUtils.counter(SERVER_CONNECTION, STATUS, "inactive")
     }
-
 
     companion object {
         private const val SERVER = "server"
+        private const val SERVER_CONNECTION = "server_connection"
     }
 }

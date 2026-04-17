@@ -11,11 +11,11 @@ CREATE TABLE users
 
 CREATE TABLE projects
 (
-    id         VARCHAR(26)  NOT NULL,
-    name       VARCHAR(100) NOT NULL,
-    tenant_id  VARCHAR(50)  NOT NULL,
-    created_by VARCHAR(26)  NOT NULL,
-    created_at TIMESTAMP    NOT NULL,
+    id         VARCHAR(26) NOT NULL,
+    name       VARCHAR(50) NOT NULL,
+    tenant_id  VARCHAR(50) NOT NULL,
+    created_by VARCHAR(26) NOT NULL,
+    created_at TIMESTAMP   NOT NULL,
     CONSTRAINT pk_projects PRIMARY KEY (id),
     CONSTRAINT uq_projects_tenant_id UNIQUE (tenant_id),
     CONSTRAINT fk_projects_created_by FOREIGN KEY (created_by) REFERENCES users (id)
@@ -66,6 +66,18 @@ CREATE TABLE servers
 CREATE TABLE user_roles
 (
     user_id VARCHAR(26) NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    roles    VARCHAR(50) NOT NULL,
+    roles   VARCHAR(50) NOT NULL,
     PRIMARY KEY (user_id, roles)
+);
+
+CREATE TABLE applications
+(
+    id             VARCHAR(26)  NOT NULL,
+    name           VARCHAR(50)  NOT NULL,
+    description    VARCHAR(255),
+    repository_url VARCHAR(255) NOT NULL,
+    project_id     VARCHAR(26)  NOT NULL,
+    update_at      TIMESTAMP,
+    created_at     TIMESTAMP    NOT NULL,
+    CONSTRAINT fk_applications_project FOREIGN KEY (project_id) REFERENCES projects (id)
 );

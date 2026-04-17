@@ -8,7 +8,7 @@
 | Feature | Context | Todo | In Progress | Done |
 |---------|---------|------|-------------|------|
 | backend | agent | 5 | 0 | 0 |
-| backend | applications | 3 | 0 | 0 |
+| backend | applications | 1 | 0 | 3 |
 | backend | build | 3 | 0 | 0 |
 | backend | deployments | 4 | 0 | 0 |
 | backend | services | 4 | 0 | 0 |

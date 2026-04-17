@@ -1,5 +1,6 @@
 package com.kaiqkt.magiapi.integration.resources
 
+import com.kaiqkt.magiapi.resources.github.responses.GithubRepositoryResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
 import com.kaiqkt.magiapi.unit.resources.MockServerHolder
 import org.mockserver.model.HttpRequest
@@ -34,6 +35,21 @@ object GithubHelper : MockServerHolder() {
             .respond(
                 HttpResponse.response()
                     .withStatusCode(HttpStatus.UNAUTHORIZED.value()),
+            )
+    }
+
+    fun mockCreateRepositorySuccessfully(response: GithubRepositoryResponse) {
+        mockServer()
+            .`when`(
+                HttpRequest.request()
+                    .withMethod("POST")
+                    .withPath("/user/repos"),
+            )
+            .respond(
+                HttpResponse.response()
+                    .withStatusCode(HttpStatus.CREATED.value())
+                    .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
+                    .withBody(objectMapper.writeValueAsString(response)),
             )
     }
 }

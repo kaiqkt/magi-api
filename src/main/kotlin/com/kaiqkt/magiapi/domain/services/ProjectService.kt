@@ -72,7 +72,7 @@ class ProjectService(
             ?: throw DomainException(ErrorType.MEMBERSHIP_NOT_FOUND)
     }
 
-    fun createGitAccount(tenantId: String, userId: String, accessToken: String) {
+    fun createGitAccount(userId: String, tenantId: String, accessToken: String) {
         val project = findByTenantId(tenantId)
         val membership = findMembership(project.id, userId)
 
@@ -82,7 +82,7 @@ class ProjectService(
             throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
         }
 
-        gitService.create(accessToken, project.id)
+        gitService.createAccount(accessToken, project.id)
     }
 
     companion object {

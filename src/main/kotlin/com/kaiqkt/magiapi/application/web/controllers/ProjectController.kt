@@ -41,7 +41,7 @@ class ProjectController(
         val userId = SecurityContext.getUserId()
         val tenantId = TenantContext.getTenant() ?: return ResponseEntity.badRequest().build()
 
-        projectService.createGitAccount(tenantId, userId, accessToken)
+        projectService.createGitAccount(userId, tenantId, accessToken)
 
         return ResponseEntity.noContent().build()
     }

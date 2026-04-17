@@ -1,18 +1,20 @@
 package com.kaiqkt.magiapi.application.web.requests
 
-import com.kaiqkt.magiapi.domain.models.Project
+import com.kaiqkt.magiapi.domain.dtos.ApplicationDto
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
-sealed class ProjectRequest {
+sealed class ApplicationRequest {
     data class Create(
         @field:Size(message = "must not exceed 50 characters", max = 50)
         @field:Pattern(regexp = "^[A-Za-z ]+$", message = "must contain only letters and spaces")
-        val name: String
-    )
+        val name: String,
+        @field:Size(message = "must not exceed 255 characters", max = 255)
+        val description: String?
+    ) : ApplicationRequest()
 }
 
-fun ProjectRequest.Create.toDomain(userId: String) = Project(
+fun ApplicationRequest.Create.toDomain() = ApplicationDto.Create(
     name = this.name,
-    createdBy = userId
+    description = this.description
 )

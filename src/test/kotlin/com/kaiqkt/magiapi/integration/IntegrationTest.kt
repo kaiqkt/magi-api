@@ -2,6 +2,7 @@ package com.kaiqkt.magiapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kaiqkt.magiapi.domain.models.enums.Role
+import com.kaiqkt.magiapi.domain.repositories.ApplicationRepository
 import com.kaiqkt.magiapi.domain.repositories.GitAccountRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectMemberShipRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectRepository
@@ -46,6 +47,9 @@ class IntegrationTest {
     @Autowired
     lateinit var serverRepository: ServerRepository
 
+    @Autowired
+    lateinit var applicationRepository: ApplicationRepository
+
     @Value($$"${authentication.access-token-secret}")
     lateinit var secret: String
 
@@ -67,6 +71,7 @@ class IntegrationTest {
         membershipRepository.deleteAll()
         gitAccountRepository.deleteAll()
         serverRepository.deleteAll()
+        applicationRepository.deleteAll()
         projectRepository.deleteAll()
         userRepository.deleteAll()
     }
