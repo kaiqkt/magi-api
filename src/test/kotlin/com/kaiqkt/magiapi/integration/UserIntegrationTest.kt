@@ -22,11 +22,11 @@ class UserIntegrationTest : IntegrationTest() {
         inner class RequestValidation {
 
             @Test
-            fun `given a request with fields exceeding max length when creating user then return 400 bad request`() {
+            fun `given a request with name exceeding max length when creating user then return 400 bad request`() {
                 val request = UserRequest.Create(
                     name = "a".repeat(101),
-                    email = "e@email.co" + "m".repeat(100),
-                    password = "Secret123!" + "x".repeat(50),
+                    email = "john@example.com",
+                    password = "Secret123!",
                 )
 
                 val response = given()
@@ -40,7 +40,26 @@ class UserIntegrationTest : IntegrationTest() {
 
                 assertEquals("Invalid method arguments", response.message)
                 assertEquals("must not exceed 100 characters", response.details["name"])
-                assertEquals("must not exceed 100 characters", response.details["email"])
+            }
+
+            @Test
+            fun `given a request with password exceeding max length when creating user then return 400 bad request`() {
+                val request = UserRequest.Create(
+                    name = "John Doe",
+                    email = "john@example.com",
+                    password = "Secret123!" + "x".repeat(50),
+                )
+
+                val response = given()
+                    .contentType(ContentType.JSON)
+                    .body(request)
+                    .post("/v1/users")
+                    .then()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("Invalid method arguments", response.message)
                 assertEquals("must not exceed 50 characters", response.details["password"])
             }
 

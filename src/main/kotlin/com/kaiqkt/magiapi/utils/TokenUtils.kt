@@ -11,13 +11,16 @@ import com.nimbusds.jose.crypto.MACSigner
 import com.nimbusds.jose.crypto.MACVerifier
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import java.security.SecureRandom
 import java.text.ParseException
 import java.time.Instant
+import java.util.Base64
 import java.util.Date
 
 
 object TokenUtils {
     private const val APPLICATION = "magi"
+    private val secureRandom = SecureRandom()
 
     fun issueTokens(
         subject: String,
@@ -26,7 +29,6 @@ object TokenUtils {
         secret: String,
     ): AuthenticationDto {
         val accessToken = signJWT(subject, ttl, roles, secret)
-//        val refreshToken = opaqueToken()
 
         return AuthenticationDto(
             accessToken = accessToken,
@@ -65,6 +67,12 @@ object TokenUtils {
             }
 
         return signedJWT.serialize()
+    }
+
+    fun opaqueToken(): String {
+        val bytes = ByteArray(32)
+        secureRandom.nextBytes(bytes)
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
     }
 
     fun getClaims(

@@ -67,8 +67,9 @@ class AuthenticationFilter(
         private const val BEARER = "Bearer "
         val publicRoutes =
             listOf(
-                HttpMethod.POST to "/v1/auth/login",
+                HttpMethod.POST to "/v1/auth",
                 HttpMethod.POST to "/v1/users",
+                HttpMethod.GET to "/ws/agent",
             )
     }
 }

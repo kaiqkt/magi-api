@@ -1,4 +1,71 @@
 package com.kaiqkt.magiapi.domain.services
 
-class ServerController {
+import com.kaiqkt.magiapi.domain.exceptions.DomainException
+import com.kaiqkt.magiapi.domain.exceptions.ErrorType
+import com.kaiqkt.magiapi.domain.models.Server
+import com.kaiqkt.magiapi.domain.models.enums.Environment
+import com.kaiqkt.magiapi.domain.models.enums.ServerStatus
+import com.kaiqkt.magiapi.domain.repositories.ServerRepository
+import com.kaiqkt.magiapi.utils.MetricsUtils
+import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.CREATED
+import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.STATUS
+import com.kaiqkt.magiapi.utils.TokenUtils
+import jakarta.transaction.Transactional
+import org.springframework.stereotype.Service
+
+@Service
+class ServerService(
+    private val projectService: ProjectService,
+    private val serverRepository: ServerRepository,
+    private val metricsUtils: MetricsUtils
+) {
+    fun create(userId: String, tenantId: String, environment: Environment): Server {
+        val project = projectService.findByTenantId(tenantId)
+        val membership = projectService.findMembership(project.id, userId)
+
+        if (!membership.hasPermission()) {
+            metricsUtils.counter(SERVER, STATUS, "insufficient_permissions")
+
+            throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
+        }
+
+        if (serverRepository.existsByProjectIdAndEnvironment(project.id, environment)) {
+            metricsUtils.counter(SERVER, STATUS, "server_already_exists", "environment", environment.name)
+
+            throw DomainException(ErrorType.SERVER_ALREADY_EXISTS)
+        }
+
+        val server = Server(
+            projectId = project.id,
+            environment = environment,
+            agentToken = TokenUtils.opaqueToken()
+        )
+
+        serverRepository.save(server)
+
+        metricsUtils.counter(SERVER, STATUS, CREATED, "environment", environment.name)
+
+        return server
+    }
+
+    fun findByAgentToken(agentToken: String): Server? {
+        return serverRepository.findByAgentToken(agentToken)
+    }
+
+    @Transactional
+    fun activate(serverId: String) {
+        serverRepository.updateStatus(serverId, ServerStatus.ACTIVE)
+        metricsUtils.counter(SERVER, STATUS, "connected")
+    }
+
+    @Transactional
+    fun deactivate(serverId: String) {
+        serverRepository.updateStatus(serverId, ServerStatus.INACTIVE)
+        metricsUtils.counter(SERVER, STATUS, "disconnected")
+    }
+
+
+    companion object {
+        private const val SERVER = "server"
+    }
 }

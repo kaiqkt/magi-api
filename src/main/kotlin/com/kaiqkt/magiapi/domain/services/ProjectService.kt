@@ -63,11 +63,11 @@ class ProjectService(
         membershipRepository.save(newMembership)
     }
 
-    private fun findByTenantId(tenantId: String): Project {
+    fun findByTenantId(tenantId: String): Project {
         return projectRepository.findByTenantId(tenantId) ?: throw DomainException(ErrorType.PROJECT_NOT_FOUND)
     }
 
-    private fun findMembership(projectId: String, userId: String): ProjectMembership {
+    fun findMembership(projectId: String, userId: String): ProjectMembership {
        return membershipRepository.findByUserIdAndProjectId(userId, projectId)
             ?: throw DomainException(ErrorType.MEMBERSHIP_NOT_FOUND)
     }

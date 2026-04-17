@@ -5,6 +5,7 @@ import com.kaiqkt.magiapi.domain.models.enums.Role
 import com.kaiqkt.magiapi.domain.repositories.GitAccountRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectMemberShipRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectRepository
+import com.kaiqkt.magiapi.domain.repositories.ServerRepository
 import com.kaiqkt.magiapi.domain.repositories.UserRepository
 import com.kaiqkt.magiapi.integration.resources.GithubHelper
 import com.kaiqkt.magiapi.utils.TokenUtils
@@ -42,6 +43,9 @@ class IntegrationTest {
     @Autowired
     lateinit var gitAccountRepository: GitAccountRepository
 
+    @Autowired
+    lateinit var serverRepository: ServerRepository
+
     @Value($$"${authentication.access-token-secret}")
     lateinit var secret: String
 
@@ -62,6 +66,7 @@ class IntegrationTest {
         GithubHelper.reset()
         membershipRepository.deleteAll()
         gitAccountRepository.deleteAll()
+        serverRepository.deleteAll()
         projectRepository.deleteAll()
         userRepository.deleteAll()
     }

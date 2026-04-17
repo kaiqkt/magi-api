@@ -12,7 +12,8 @@ enum class ErrorType {
     INVALID_ACCESS_TOKEN,
     INSUFFICIENT_PERMISSION,
     EXPIRED_ACCESS_TOKEN,
-    INVALID_GIT_ACCESS_TOKEN;
+    INVALID_GIT_ACCESS_TOKEN,
+    SERVER_ALREADY_EXISTS;
 
     val message: String = toString().lowercase(getDefault()).replace("_", " ")
 }

@@ -77,6 +77,7 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
             ErrorType.INSUFFICIENT_PERMISSION -> HttpStatus.FORBIDDEN
             ErrorType.MEMBERSHIP_NOT_FOUND -> HttpStatus.NOT_FOUND
             ErrorType.INVALID_GIT_ACCESS_TOKEN -> HttpStatus.UNAUTHORIZED
+            ErrorType.SERVER_ALREADY_EXISTS -> HttpStatus.CONFLICT
         }
     }
 }
