@@ -116,7 +116,8 @@ Flyway migrations live in `src/main/resources/db/migration/`. All FK columns and
 
 ## Current Focus
 
-No backlog file found. Update this section as priorities change.
+> Managed via the `/backlog` skill. See [docs/backlog/index.md](docs/backlog/index.md) for the full task list.
+> System design documents live in [docs/system-design/](docs/system-design/). Use `/system-design [topic]` to create or `/system-design refine [topic]` to update a design, and `/system-design tasks [topic]` to bulk-import backlog tasks from it.
 
 ## Commit Conventions
 
