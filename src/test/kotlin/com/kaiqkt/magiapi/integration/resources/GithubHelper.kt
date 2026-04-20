@@ -14,7 +14,7 @@ object GithubHelper : MockServerHolder() {
         mockServer()
             .`when`(
                 HttpRequest.request()
-                    .withMethod("POST")
+                    .withMethod("GET")
                     .withPath("/github/user"),
             )
             .respond(
@@ -29,7 +29,7 @@ object GithubHelper : MockServerHolder() {
         mockServer()
             .`when`(
                 HttpRequest.request()
-                    .withMethod("POST")
+                    .withMethod("GET")
                     .withPath("/github/user"),
             )
             .respond(

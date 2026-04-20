@@ -1,7 +1,6 @@
 package com.kaiqkt.magiapi.application.web.requests
 
-import com.kaiqkt.magiapi.domain.models.User
-import com.kaiqkt.magiapi.utils.PasswordEncrypt
+import com.kaiqkt.magiapi.domain.dtos.UserDto
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
@@ -24,8 +23,8 @@ sealed class UserRequest {
     ) : UserRequest()
 }
 
-fun UserRequest.Create.toDomain(): User = User(
+fun UserRequest.Create.toDomain(): UserDto = UserDto(
     email = this.email,
-    passwordHash = PasswordEncrypt.encoder.encode(this.password),
+    password = this.password,
     name = this.name,
 )

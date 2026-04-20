@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.testcontainers.junit.jupiter.Testcontainers
 
 @Testcontainers
@@ -49,6 +50,9 @@ class IntegrationTest {
 
     @Autowired
     lateinit var applicationRepository: ApplicationRepository
+
+    @Autowired
+    lateinit var passwordEncoder: PasswordEncoder
 
     @Value($$"${authentication.access-token-secret}")
     lateinit var secret: String

@@ -17,8 +17,8 @@ class GitAccount(
     val projectId: String = "",
     @Enumerated(EnumType.STRING)
     val accountType: AccountType = AccountType.USER,
-    val username: String = "",
-    val profileUrl: String = "",
-    val accessToken: String = "",
+    var username: String = "",
+    var profileUrl: String = "",
+    var accessToken: String = "",
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )

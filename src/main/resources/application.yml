@@ -5,6 +5,8 @@ server:
 spring:
   application:
     name: magi-api
+  profiles:
+    active: local
 
 management:
   endpoints:

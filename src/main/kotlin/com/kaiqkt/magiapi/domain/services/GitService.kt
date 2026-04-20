@@ -21,9 +21,10 @@ class GitService(
     private val metrics: MetricsUtils
 ) {
 
-    private val encodedCiContent: String = requireNotNull(this::class.java.getResourceAsStream("/github-actions/ci.yml"))
-        .bufferedReader()
-        .use { Base64.getEncoder().encodeToString(it.readText().toByteArray()) }
+    private val encodedCiContent: String =
+        requireNotNull(this::class.java.getResourceAsStream("/github-actions/ci.yml"))
+            .bufferedReader()
+            .use { Base64.getEncoder().encodeToString(it.readText().toByteArray()) }
 
     fun createAccount(accessToken: String, projectId: String) {
         val userDto = gitGateway.findUser(accessToken)
@@ -34,7 +35,11 @@ class GitService(
         }
 
         if (userDto is GitUserDto.Success) {
-            val account = gitAccountRepository.findByProjectId(projectId) ?: GitAccount(
+            val account = gitAccountRepository.findByProjectId(projectId)?.apply {
+                this.username = userDto.username
+                this.profileUrl = userDto.profileUrl
+                this.accessToken = accessToken
+            } ?: GitAccount(
                 projectId = projectId,
                 username = userDto.username,
                 profileUrl = userDto.profileUrl,
@@ -65,6 +70,7 @@ class GitService(
 
     fun provisionCiWorkflow(repositoryName: String, projectId: String) {
         val account = findAccount(projectId)
+        println(account.accessToken)
 
         val gitContent = GitContentDto.Create(
             owner = account.username,

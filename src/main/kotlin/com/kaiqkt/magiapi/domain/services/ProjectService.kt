@@ -38,7 +38,6 @@ class ProjectService(
         metricsUtils.counter(PROJECT, STATUS, CREATED)
     }
 
-    //voltar aqui - pulando a etapa de invite
     fun createMembership(userId: String, tenantId: String, guestId: String) {
         val (project, _) = resolveAuthorizedMember(tenantId, userId)
 
@@ -76,6 +75,5 @@ class ProjectService(
     companion object {
         private const val PROJECT = "project"
         private const val PROJECT_INVITE = "project_invite"
-        private const val PROJECT_GIT_ACCOUNT = "project_git_account"
     }
 }

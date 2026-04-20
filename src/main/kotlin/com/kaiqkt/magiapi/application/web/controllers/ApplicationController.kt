@@ -6,9 +6,11 @@ import com.kaiqkt.magiapi.application.web.requests.ApplicationRequest
 import com.kaiqkt.magiapi.application.web.requests.toDomain
 import com.kaiqkt.magiapi.domain.services.ApplicationService
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
@@ -24,16 +26,16 @@ class ApplicationController(
 
         applicationService.create(request.toDomain(), userId, tenantId)
 
-        return ResponseEntity.noContent().build()
+        return ResponseEntity(HttpStatus.CREATED)
     }
 
-    @PostMapping("/v1/applications/{application_id}/ci")
+    @PutMapping("/v1/applications/{application_id}/ci")
     fun provisionCiWorkflow(@PathVariable("application_id") applicationId: String): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
         val tenantId = TenantContext.getTenant()
 
         applicationService.provisionCiWorkflow(applicationId, userId, tenantId)
 
-        return ResponseEntity.noContent().build()
+        return ResponseEntity.ok().build()
     }
 }

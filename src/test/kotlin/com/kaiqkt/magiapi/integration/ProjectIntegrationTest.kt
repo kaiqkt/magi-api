@@ -141,7 +141,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                     .body(request)
                     .post("/v1/projects")
                     .then()
-                    .statusCode(HttpStatus.SC_NO_CONTENT)
+                    .statusCode(HttpStatus.SC_CREATED)
 
                 val projects = projectRepository.findAll()
                 assertEquals(1, projects.size)
@@ -161,13 +161,13 @@ class ProjectIntegrationTest : IntegrationTest() {
     }
 
     @Nested
-    inner class ProjectInvitation {
+    inner class ProjectMembership {
 
         @Nested
         inner class Auth {
 
             @Test
-            fun `given an unauthenticated request when inviting user then return 401 unauthorized`() {
+            fun `given an unauthenticated request when creating membership then return 401 unauthorized`() {
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
 
                 given()
@@ -182,7 +182,7 @@ class ProjectIntegrationTest : IntegrationTest() {
         inner class RequestValidation {
 
             @Test
-            fun `given a request without tenant when inviting user then return 400 bad request`() {
+            fun `given a request without tenant when creating membership then return 400 bad request`() {
                 val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
 
@@ -198,7 +198,7 @@ class ProjectIntegrationTest : IntegrationTest() {
         inner class BusinessRules {
 
             @Test
-            fun `given a non-existent project when inviting user then return 404 not found`() {
+            fun `given a non-existent project when creating membership then return 404 not found`() {
                 val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
 
@@ -215,7 +215,7 @@ class ProjectIntegrationTest : IntegrationTest() {
             }
 
             @Test
-            fun `given a requester without membership when inviting user then return 404 not found`() {
+            fun `given a requester without membership when creating membership then return 404 not found`() {
                 val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
                 val requester = userRepository.save(User(email = "requester@example.com", passwordHash = "hash", name = "Requester"))
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
@@ -234,7 +234,7 @@ class ProjectIntegrationTest : IntegrationTest() {
             }
 
             @Test
-            fun `given a requester with member role when inviting user then return 403 forbidden`() {
+            fun `given a requester with member role when creating membership then return 403 forbidden`() {
                 val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
                 val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
@@ -261,7 +261,7 @@ class ProjectIntegrationTest : IntegrationTest() {
 
             @ParameterizedTest
             @EnumSource(MemberRole::class, names = ["OWNER", "ADMIN"])
-            fun `given a valid requester when inviting user then return 204 and persist membership`(role: MemberRole) {
+            fun `given a valid requester when creating membership then return 204 and persist membership`(role: MemberRole) {
                 val requester = userRepository.save(User(email = "requester@example.com", passwordHash = "hash", name = "Requester"))
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = requester.id))
@@ -274,7 +274,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                     .header("Host", "my-project.localhost.com")
                     .post("/v1/projects/member/${guest.id}")
                     .then()
-                    .statusCode(HttpStatus.SC_NO_CONTENT)
+                    .statusCode(HttpStatus.SC_CREATED)
 
                 val guestMembership = membershipRepository.findByUserIdAndProjectId(guest.id, project.id)
                 assertEquals(guest.id, guestMembership?.userId)
@@ -414,7 +414,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                     .header("Host", "my-project.localhost.com")
                     .put("/v1/projects/git?access_token=valid-token")
                     .then()
-                    .statusCode(HttpStatus.SC_NO_CONTENT)
+                    .statusCode(HttpStatus.SC_CREATED)
 
                 val gitAccount = gitAccountRepository.findByProjectId(project.id)
                 assertEquals(project.id, gitAccount?.projectId)

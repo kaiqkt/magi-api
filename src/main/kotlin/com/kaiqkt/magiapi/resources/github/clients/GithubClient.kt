@@ -2,6 +2,7 @@ package com.kaiqkt.magiapi.resources.github.clients
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.extensions.cUrlString
 import com.github.kittinunf.fuel.core.isSuccessful
 import com.kaiqkt.magiapi.resources.exceptions.UnexpectedResourceException
 import com.kaiqkt.magiapi.resources.github.requests.GithubContentRequest
@@ -28,16 +29,18 @@ class GithubClient(
         val (_, response, result) =
             metricsUtils.request(GITHUB_GET_USER) {
                 Fuel
-                    .post("$apiUrl/user")
+                    .get("$apiUrl/user")
                     .header(
                         mapOf(
-                            "Accept" to MediaType.APPLICATION_JSON,
-                            "X-GitHub-Api-Version" to "2022-11-28",
+                            "Accept" to "application/vnd.github+json",
+                            "X-GitHub-Api-Version" to "2026-03-10",
                             HttpHeaders.AUTHORIZATION to "Bearer $accessToken",
                         ),
                     )
                     .response()
             }
+
+        println( "stats: ${response.statusCode}")
 
         return when {
             response.isSuccessful -> mapper.readValue(result.get(), GithubUserResponse::class.java)
@@ -54,7 +57,8 @@ class GithubClient(
                     .header(
                         mapOf(
                             "Content-Type" to MediaType.APPLICATION_JSON,
-                            "Accept" to MediaType.APPLICATION_JSON,
+                            "Accept" to "application/vnd.github+json",
+                            "X-GitHub-Api-Version" to "2026-03-10",
                             "Authorization" to "Bearer $accessToken",
                         ),
                     ).body(mapper.writeValueAsString(request))
@@ -82,8 +86,9 @@ class GithubClient(
                     .put("$apiUrl/repos/$owner/$repo/contents/$contentPath")
                     .header(
                         mapOf(
+                            "Accept" to "application/vnd.github+json",
+                            "X-GitHub-Api-Version" to "2026-03-10",
                             "Content-Type" to MediaType.APPLICATION_JSON,
-                            "Accept" to MediaType.APPLICATION_JSON,
                             "Authorization" to "Bearer $accessToken",
                         ),
                     ).body(mapper.writeValueAsString(request))

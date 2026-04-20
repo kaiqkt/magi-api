@@ -29,7 +29,6 @@ class TenantFilter : OncePerRequestFilter() {
 
                 TenantContext.setTenant(tenant)
             }
-
             filterChain.doFilter(request, response)
         } finally {
             TenantContext.clear()
@@ -52,10 +51,10 @@ class TenantFilter : OncePerRequestFilter() {
 
     companion object {
         private val tenantRoutes = listOf(
-            HttpMethod.POST to "/v1/projects/invite/*",
+            HttpMethod.POST to "/v1/projects/member/*",
             HttpMethod.PUT to "/v1/projects/git",
             HttpMethod.POST to "/v1/applications",
-            HttpMethod.POST to "/v1/applications/*/ci",
+            HttpMethod.PUT to "/v1/applications/*/ci",
             HttpMethod.POST to "/v1/servers",
         )
     }

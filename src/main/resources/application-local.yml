@@ -1,0 +1,19 @@
+---
+spring:
+  application:
+    name: magi-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/magi
+    username: magi
+    password: magi
+  web:
+    locale: en_US
+    locale-resolver: fixed
+
+authentication:
+  access-token-ttl: 6000000
+  access-token-secret: k2p4/4gX5h0x/1B9Y9O2VJ6ZcfjWQmV5UQJ4cZP9YvE=
+
+github:
+  url: https://api.github.com
+  content-path: .github/workflows/magi-ci.yml

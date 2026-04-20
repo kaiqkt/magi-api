@@ -4,6 +4,7 @@ import com.kaiqkt.magiapi.application.web.requests.UserRequest
 import com.kaiqkt.magiapi.application.web.requests.toDomain
 import com.kaiqkt.magiapi.domain.services.UserService
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -20,6 +21,6 @@ class UserController(
     ): ResponseEntity<Unit> {
         userService.create(request.toDomain())
 
-        return ResponseEntity.noContent().build()
+        return ResponseEntity(HttpStatus.CREATED)
     }
 }

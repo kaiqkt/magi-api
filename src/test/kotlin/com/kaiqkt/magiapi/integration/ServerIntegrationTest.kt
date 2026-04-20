@@ -162,7 +162,7 @@ class ServerIntegrationTest : IntegrationTest() {
                     .then()
                     .statusCode(HttpStatus.SC_OK)
                     .extract()
-                    .`as`(ServerResponse.Created::class.java)
+                    .`as`(ServerResponse::class.java)
 
                 assertNotNull(response.agentToken)
 

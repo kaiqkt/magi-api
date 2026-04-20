@@ -270,7 +270,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                     .body(ApplicationRequest.Create(name = "My App", description = "My application description"))
                     .post("/v1/applications")
                     .then()
-                    .statusCode(HttpStatus.SC_NO_CONTENT)
+                    .statusCode(HttpStatus.SC_CREATED)
 
                 val applications = applicationRepository.findAll()
                 assertEquals(1, applications.size)
@@ -293,7 +293,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
             fun `given an unauthenticated request when provisioning ci workflow then return 401 unauthorized`() {
                 given()
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/any-id/ci")
+                    .put("/v1/applications/any-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED)
             }
@@ -308,7 +308,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
 
                 given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .post("/v1/applications/any-id/ci")
+                    .put("/v1/applications/any-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_BAD_REQUEST)
             }
@@ -324,7 +324,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
                     .header("Host", "unknown-project.localhost.com")
-                    .post("/v1/applications/any-id/ci")
+                    .put("/v1/applications/any-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -342,7 +342,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(requester.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/any-id/ci")
+                    .put("/v1/applications/any-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -363,7 +363,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(member.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/any-id/ci")
+                    .put("/v1/applications/any-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_FORBIDDEN)
                     .extract()
@@ -383,7 +383,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/non-existent-id/ci")
+                    .put("/v1/applications/non-existent-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -406,7 +406,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/${application.id}/ci")
+                    .put("/v1/applications/${application.id}/ci")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -433,7 +433,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/${application.id}/ci")
+                    .put("/v1/applications/${application.id}/ci")
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED)
                     .extract()
@@ -465,9 +465,12 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/${application.id}/ci")
+                    .put("/v1/applications/${application.id}/ci")
                     .then()
-                    .statusCode(HttpStatus.SC_NO_CONTENT)
+                    .statusCode(HttpStatus.SC_OK)
+
+                val saved = applicationRepository.findById(application.id).get()
+                assertEquals(ApplicationStatus.CREATED, saved.status)
             }
 
             @Test
@@ -487,9 +490,9 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/applications/${application.id}/ci")
+                    .put("/v1/applications/${application.id}/ci")
                     .then()
-                    .statusCode(HttpStatus.SC_NO_CONTENT)
+                    .statusCode(HttpStatus.SC_OK)
 
                 val saved = applicationRepository.findById(application.id).get()
                 assertEquals(ApplicationStatus.CREATED, saved.status)

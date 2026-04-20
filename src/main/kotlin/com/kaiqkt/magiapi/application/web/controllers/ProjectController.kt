@@ -6,6 +6,7 @@ import com.kaiqkt.magiapi.application.web.requests.ProjectRequest
 import com.kaiqkt.magiapi.application.web.requests.toDomain
 import com.kaiqkt.magiapi.domain.services.ProjectService
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,17 +24,17 @@ class ProjectController(
         val userId = SecurityContext.getUserId()
         projectService.create(request.toDomain(userId))
 
-        return ResponseEntity.noContent().build()
+        return ResponseEntity(HttpStatus.CREATED)
     }
 
     @PostMapping("/v1/projects/member/{user_id}")
-    fun invite(@PathVariable("user_id") guestId: String): ResponseEntity<Unit> {
+    fun createMembership(@PathVariable("user_id") guestId: String): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
         val tenantId = TenantContext.getTenant()
 
         projectService.createMembership(userId, tenantId, guestId)
 
-        return ResponseEntity.noContent().build()
+        return ResponseEntity(HttpStatus.CREATED)
     }
 
     @PutMapping("/v1/projects/git")
@@ -43,6 +44,6 @@ class ProjectController(
 
         projectService.createGitAccount(userId, tenantId, accessToken)
 
-        return ResponseEntity.noContent().build()
+        return ResponseEntity(HttpStatus.CREATED)
     }
 }

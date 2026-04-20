@@ -1,8 +1,7 @@
 package com.kaiqkt.magiapi.utils
 
 import com.kaiqkt.magiapi.domain.dtos.AuthenticationDto
-import com.kaiqkt.magiapi.domain.exceptions.DomainException
-import com.kaiqkt.magiapi.domain.exceptions.ErrorType
+import com.kaiqkt.magiapi.domain.exceptions.AuthorizationException
 import com.kaiqkt.magiapi.domain.models.enums.Role
 import com.nimbusds.jose.JOSEObjectType
 import com.nimbusds.jose.JWSAlgorithm
@@ -84,17 +83,17 @@ object TokenUtils {
 
             val verifier = MACVerifier(secret.toByteArray())
             if (!signedJWT.verify(verifier)) {
-                throw DomainException(ErrorType.INVALID_ACCESS_TOKEN)
+                throw AuthorizationException("Invalid access token")
             }
             val jwtClaimsSet = signedJWT.jwtClaimsSet
 
             if (jwtClaimsSet.expirationTime.before(Date())) {
-                throw DomainException(ErrorType.EXPIRED_ACCESS_TOKEN)
+                throw AuthorizationException("Expired access token")
             }
 
             return jwtClaimsSet
         } catch (_: ParseException) {
-            throw DomainException(ErrorType.INVALID_ACCESS_TOKEN)
+            throw AuthorizationException("Invalid access token")
         }
     }
 }

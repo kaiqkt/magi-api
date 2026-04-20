@@ -4,7 +4,6 @@ import com.kaiqkt.magiapi.application.web.requests.AuthenticationRequest
 import com.kaiqkt.magiapi.application.web.responses.ErrorResponse
 import com.kaiqkt.magiapi.application.web.responses.LoginResponse
 import com.kaiqkt.magiapi.domain.models.User
-import com.kaiqkt.magiapi.utils.PasswordEncrypt
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
 import org.apache.http.HttpStatus
@@ -46,7 +45,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
                 userRepository.save(
                     User(
                         email = "john@example.com",
-                        passwordHash = PasswordEncrypt.encoder.encode("Secret123!"),
+                        passwordHash = passwordEncoder.encode("Secret123!"),
                         name = "John Doe",
                     )
                 )
@@ -77,7 +76,7 @@ class AuthenticationIntegrationTest : IntegrationTest() {
                 userRepository.save(
                     User(
                         email = "john@example.com",
-                        passwordHash = PasswordEncrypt.encoder.encode("Secret123!"),
+                        passwordHash = passwordEncoder.encode("Secret123!"),
                         name = "John Doe",
                     )
                 )

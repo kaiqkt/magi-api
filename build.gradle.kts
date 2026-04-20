@@ -40,6 +40,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")

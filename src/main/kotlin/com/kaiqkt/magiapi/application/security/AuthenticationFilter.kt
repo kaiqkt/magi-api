@@ -1,5 +1,6 @@
 package com.kaiqkt.magiapi.application.security
 
+import com.kaiqkt.magiapi.domain.exceptions.AuthorizationException
 import com.kaiqkt.magiapi.utils.TokenUtils
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -22,12 +23,12 @@ class AuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        try {
-            if (shouldSkipFilter(request)) {
-                filterChain.doFilter(request, response)
-                return
-            }
+        if (shouldSkipFilter(request)) {
+            filterChain.doFilter(request, response)
+            return
+        }
 
+        try {
             val authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION)
 
             if (!authorizationHeader.isNullOrBlank() &&
@@ -38,11 +39,13 @@ class AuthenticationFilter(
                 val authentication = handleAccessToken(token)
                 SecurityContextHolder.getContext().authentication = authentication
             }
-
-            filterChain.doFilter(request, response)
-        } catch (_: Exception) {
+        } catch (e: AuthorizationException) {
+            logger.error("Exception occurred while authentication filter", e)
             response.status = HttpStatus.UNAUTHORIZED.value()
+            return
         }
+
+        filterChain.doFilter(request, response)
     }
 
     private fun shouldSkipFilter(request: HttpServletRequest): Boolean {

@@ -3,6 +3,7 @@ package com.kaiqkt.magiapi.application.web.controllers
 import com.kaiqkt.magiapi.application.security.SecurityContext
 import com.kaiqkt.magiapi.application.web.interceptors.TenantContext
 import com.kaiqkt.magiapi.application.web.responses.ServerResponse
+import com.kaiqkt.magiapi.application.web.responses.toResponse
 import com.kaiqkt.magiapi.domain.models.enums.Environment
 import com.kaiqkt.magiapi.domain.services.ServerService
 import org.springframework.http.ResponseEntity
@@ -15,12 +16,12 @@ class ServerController(
     private val serverService: ServerService,
 ) {
     @PostMapping("/v1/servers")
-    fun create(@RequestParam("env") environment: Environment): ResponseEntity<ServerResponse.Created> {
+    fun create(@RequestParam("env") environment: Environment): ResponseEntity<ServerResponse> {
         val userId = SecurityContext.getUserId()
         val tenantId = TenantContext.getTenant()
 
         val server = serverService.create(userId, tenantId, environment)
 
-        return ResponseEntity.ok(ServerResponse.Created(server.agentToken))
+        return ResponseEntity.ok(server.toResponse())
     }
 }

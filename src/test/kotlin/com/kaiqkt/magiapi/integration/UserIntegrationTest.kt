@@ -193,7 +193,7 @@ class UserIntegrationTest : IntegrationTest() {
                     .body(request)
                     .post("/v1/users")
                     .then()
-                    .statusCode(HttpStatus.SC_NO_CONTENT)
+                    .statusCode(HttpStatus.SC_CREATED)
 
                 val saved = userRepository.findByEmail(request.email)
                 assertNotNull(saved)
