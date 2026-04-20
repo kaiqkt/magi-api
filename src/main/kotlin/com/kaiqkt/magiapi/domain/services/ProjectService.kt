@@ -5,7 +5,6 @@ import com.kaiqkt.magiapi.domain.exceptions.ErrorType
 import com.kaiqkt.magiapi.domain.models.Project
 import com.kaiqkt.magiapi.domain.models.ProjectMembership
 import com.kaiqkt.magiapi.domain.models.enums.MemberRole
-import com.kaiqkt.magiapi.domain.models.enums.MemberStatus
 import com.kaiqkt.magiapi.domain.repositories.ProjectMemberShipRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectRepository
 import com.kaiqkt.magiapi.utils.MetricsUtils
@@ -31,8 +30,7 @@ class ProjectService(
         val membership = ProjectMembership(
             userId = project.createdBy,
             projectId = project.id,
-            role = MemberRole.OWNER,
-            status = MemberStatus.ACTIVE,
+            role = MemberRole.OWNER
         )
 
         membershipRepository.save(membership)
@@ -41,14 +39,13 @@ class ProjectService(
     }
 
     //voltar aqui - pulando a etapa de invite
-    fun invite(userId: String, tenantId: String, guestId: String) {
-        val (project, _) = resolveAuthorizedMembership(tenantId, userId)
+    fun createMembership(userId: String, tenantId: String, guestId: String) {
+        val (project, _) = resolveAuthorizedMember(tenantId, userId)
 
         val newMembership = ProjectMembership(
             userId = guestId,
             projectId = project.id,
-            role = MemberRole.MEMBER,
-            status = MemberStatus.ACTIVE,
+            role = MemberRole.MEMBER
         )
 
         metricsUtils.counter(PROJECT_INVITE, STATUS, "created")
@@ -56,7 +53,7 @@ class ProjectService(
         membershipRepository.save(newMembership)
     }
 
-    fun resolveAuthorizedMembership(tenantId: String, userId: String): Pair<Project, ProjectMembership> {
+    fun resolveAuthorizedMember(tenantId: String, userId: String): Pair<Project, ProjectMembership> {
         val project = projectRepository.findByTenantId(tenantId)
             ?: throw DomainException(ErrorType.PROJECT_NOT_FOUND)
         val membership = membershipRepository.findByUserIdAndProjectId(userId, project.id)
@@ -71,7 +68,7 @@ class ProjectService(
     }
 
     fun createGitAccount(userId: String, tenantId: String, accessToken: String) {
-        val (project, _) = resolveAuthorizedMembership(tenantId, userId)
+        val (project, _) = resolveAuthorizedMember(tenantId, userId)
 
         gitService.createAccount(accessToken, project.id)
     }

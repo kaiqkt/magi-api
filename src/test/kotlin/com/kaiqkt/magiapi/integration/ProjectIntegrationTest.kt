@@ -6,7 +6,6 @@ import com.kaiqkt.magiapi.domain.models.Project
 import com.kaiqkt.magiapi.domain.models.ProjectMembership
 import com.kaiqkt.magiapi.domain.models.User
 import com.kaiqkt.magiapi.domain.models.enums.MemberRole
-import com.kaiqkt.magiapi.domain.models.enums.MemberStatus
 import com.kaiqkt.magiapi.integration.resources.GithubHelper
 import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
 import io.restassured.RestAssured.given
@@ -157,7 +156,6 @@ class ProjectIntegrationTest : IntegrationTest() {
                 assertEquals(user.id, membership.userId)
                 assertEquals(project.id, membership.projectId)
                 assertEquals(MemberRole.OWNER, membership.role)
-                assertEquals(MemberStatus.ACTIVE, membership.status)
             }
         }
     }
@@ -174,7 +172,7 @@ class ProjectIntegrationTest : IntegrationTest() {
 
                 given()
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/projects/invite/${guest.id}")
+                    .post("/v1/projects/member/${guest.id}")
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED)
             }
@@ -190,7 +188,7 @@ class ProjectIntegrationTest : IntegrationTest() {
 
                 given()
                     .header("Authorization", "Bearer ${generateToken(owner.id)}")
-                    .post("/v1/projects/invite/${guest.id}")
+                    .post("/v1/projects/member/${guest.id}")
                     .then()
                     .statusCode(HttpStatus.SC_BAD_REQUEST)
             }
@@ -207,7 +205,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(owner.id)}")
                     .header("Host", "unknown-project.localhost.com")
-                    .post("/v1/projects/invite/${guest.id}")
+                    .post("/v1/projects/member/${guest.id}")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -226,7 +224,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(requester.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/projects/invite/${guest.id}")
+                    .post("/v1/projects/member/${guest.id}")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -242,13 +240,13 @@ class ProjectIntegrationTest : IntegrationTest() {
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER)
                 )
 
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(member.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/projects/invite/${guest.id}")
+                    .post("/v1/projects/member/${guest.id}")
                     .then()
                     .statusCode(HttpStatus.SC_FORBIDDEN)
                     .extract()
@@ -268,13 +266,13 @@ class ProjectIntegrationTest : IntegrationTest() {
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = requester.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = requester.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = requester.id, projectId = project.id, role = role)
                 )
 
                 given()
                     .header("Authorization", "Bearer ${generateToken(requester.id)}")
                     .header("Host", "my-project.localhost.com")
-                    .post("/v1/projects/invite/${guest.id}")
+                    .post("/v1/projects/member/${guest.id}")
                     .then()
                     .statusCode(HttpStatus.SC_NO_CONTENT)
 
@@ -282,7 +280,6 @@ class ProjectIntegrationTest : IntegrationTest() {
                 assertEquals(guest.id, guestMembership?.userId)
                 assertEquals(project.id, guestMembership?.projectId)
                 assertEquals(MemberRole.MEMBER, guestMembership?.role)
-                assertEquals(MemberStatus.ACTIVE, guestMembership?.status)
             }
         }
     }
@@ -361,7 +358,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                 val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER)
                 )
 
                 val response = given()
@@ -381,7 +378,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                 val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER)
                 )
                 GithubHelper.mockGetUserUnauthorized()
 
@@ -407,7 +404,7 @@ class ProjectIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = role)
                 )
                 val githubUser = GithubUserResponse(login = "octocat", htmlUrl = "https://github.com/octocat")
                 GithubHelper.mockGetUserSuccessfully(githubUser)

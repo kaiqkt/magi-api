@@ -7,7 +7,6 @@ import com.kaiqkt.magiapi.domain.models.Project
 import com.kaiqkt.magiapi.domain.models.ProjectMembership
 import com.kaiqkt.magiapi.domain.models.User
 import com.kaiqkt.magiapi.domain.models.enums.MemberRole
-import com.kaiqkt.magiapi.domain.models.enums.MemberStatus
 import com.kaiqkt.magiapi.integration.resources.GithubHelper
 import com.kaiqkt.magiapi.resources.github.responses.GithubRepositoryResponse
 import io.restassured.RestAssured.given
@@ -181,7 +180,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER)
                 )
 
                 val response = given()
@@ -203,7 +202,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
                 )
                 applicationRepository.save(
                     Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
@@ -228,7 +227,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
                 )
 
                 val response = given()
@@ -255,7 +254,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = role)
                 )
                 gitAccountRepository.save(
                     GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
@@ -358,7 +357,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER)
                 )
 
                 val response = given()
@@ -378,7 +377,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
                 )
 
                 val response = given()
@@ -398,7 +397,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
                 )
                 val application = applicationRepository.save(
                     Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
@@ -421,7 +420,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
                 )
                 gitAccountRepository.save(
                     GitAccount(projectId = project.id, username = "github-user", accessToken = "expired-token")
@@ -453,7 +452,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = role)
                 )
                 gitAccountRepository.save(
                     GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
@@ -476,7 +475,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
                 )
                 gitAccountRepository.save(
                     GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")

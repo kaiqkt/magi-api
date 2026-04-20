@@ -27,7 +27,6 @@ CREATE TABLE project_memberships
     user_id    VARCHAR(26) NOT NULL,
     project_id VARCHAR(26) NOT NULL,
     role       VARCHAR(20) NOT NULL,
-    status     VARCHAR(20) NOT NULL,
     created_at TIMESTAMP   NOT NULL,
     CONSTRAINT pk_project_memberships PRIMARY KEY (id),
     CONSTRAINT uq_project_memberships_user_project UNIQUE (user_id, project_id),

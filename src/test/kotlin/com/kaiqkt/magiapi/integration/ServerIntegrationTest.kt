@@ -8,7 +8,6 @@ import com.kaiqkt.magiapi.domain.models.Server
 import com.kaiqkt.magiapi.domain.models.User
 import com.kaiqkt.magiapi.domain.models.enums.Environment
 import com.kaiqkt.magiapi.domain.models.enums.MemberRole
-import com.kaiqkt.magiapi.domain.models.enums.MemberStatus
 import com.kaiqkt.magiapi.domain.models.enums.ServerStatus
 import io.restassured.RestAssured.given
 import org.apache.http.HttpStatus
@@ -107,7 +106,7 @@ class ServerIntegrationTest : IntegrationTest() {
                 val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER)
                 )
 
                 val response = given()
@@ -127,7 +126,7 @@ class ServerIntegrationTest : IntegrationTest() {
                 val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER)
                 )
                 serverRepository.save(Server(projectId = project.id, environment = Environment.DEV, agentToken = "existing-token"))
 
@@ -153,7 +152,7 @@ class ServerIntegrationTest : IntegrationTest() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = role)
                 )
 
                 val response = given()

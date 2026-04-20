@@ -18,7 +18,7 @@ class Application(
     val description: String? = null,
     val repositoryUrl: String? = null,
     @Enumerated(EnumType.STRING)
-    var status: ApplicationStatus = ApplicationStatus.PENDING_INITIALIZATION,
+    var status: ApplicationStatus = ApplicationStatus.PENDING_CI_PROVISIONING,
     val projectId: String = "",
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )

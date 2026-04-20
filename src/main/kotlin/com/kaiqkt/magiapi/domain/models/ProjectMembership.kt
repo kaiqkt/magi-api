@@ -2,7 +2,6 @@ package com.kaiqkt.magiapi.domain.models
 
 import com.github.f4b6a3.ulid.UlidCreator
 import com.kaiqkt.magiapi.domain.models.enums.MemberRole
-import com.kaiqkt.magiapi.domain.models.enums.MemberStatus
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -21,7 +20,5 @@ class ProjectMembership(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val role: MemberRole = MemberRole.MEMBER,
-    @Enumerated(EnumType.STRING)
-    val status: MemberStatus = MemberStatus.INVITED,
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )

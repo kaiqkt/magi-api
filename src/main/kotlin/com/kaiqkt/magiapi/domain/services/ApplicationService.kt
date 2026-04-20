@@ -26,11 +26,9 @@ class ApplicationService(
         userId: String,
         tenantId: String
     ) {
-        val (project, _) = projectService.resolveAuthorizedMembership(tenantId, userId)
+        val (project, _) = projectService.resolveAuthorizedMember(tenantId, userId)
 
         if (applicationRepository.existsByNameAndProjectId(applicationDto.name, project.id)) {
-            metricsUtils.counter(APPLICATION, STATUS, "already_exists")
-
             throw DomainException(ErrorType.APPLICATION_ALREADY_EXIST)
         }
 
@@ -50,12 +48,12 @@ class ApplicationService(
 
     @Transactional
     fun provisionCiWorkflow(applicationId: String, userId: String, tenantId: String) {
-        val (project, _) = projectService.resolveAuthorizedMembership(tenantId, userId)
+        val (project, _) = projectService.resolveAuthorizedMember(tenantId, userId)
 
         val application = applicationRepository.findById(applicationId).getOrNull()
             ?: throw DomainException(ErrorType.APPLICATION_NOT_FOUND)
 
-        if (application.status == ApplicationStatus.PENDING_INITIALIZATION) {
+        if (application.status == ApplicationStatus.PENDING_CI_PROVISIONING) {
             val repositoryName = "${project.tenantId}_${application.name}"
 
             gitService.provisionCiWorkflow(repositoryName, project.id)

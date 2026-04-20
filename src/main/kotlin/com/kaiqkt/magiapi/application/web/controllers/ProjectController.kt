@@ -26,12 +26,12 @@ class ProjectController(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/v1/projects/invite/{user_id}")
+    @PostMapping("/v1/projects/member/{user_id}")
     fun invite(@PathVariable("user_id") guestId: String): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
         val tenantId = TenantContext.getTenant()
 
-        projectService.invite(userId, tenantId, guestId)
+        projectService.createMembership(userId, tenantId, guestId)
 
         return ResponseEntity.noContent().build()
     }

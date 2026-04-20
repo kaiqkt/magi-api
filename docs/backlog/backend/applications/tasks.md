@@ -28,7 +28,7 @@
 
 ## Provisionar repositório e workflow de build no GitHub ao criar Application
 
-**Status:** `todo`
+**Status:** `done`
 **Description:** O fluxo de provisionamento deve ser executado em 3 passos sequenciais com rollback compensatório em caso de falha em qualquer etapa. Se o projeto não tiver `GitAccount` associado, lançar `DomainException(ErrorType.GIT_ACCOUNT_NOT_FOUND)` antes de iniciar qualquer passo.
 
 **Passo 1 — Criar repositório**
