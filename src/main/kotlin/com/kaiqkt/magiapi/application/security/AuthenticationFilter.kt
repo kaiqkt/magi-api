@@ -5,7 +5,6 @@ import com.kaiqkt.magiapi.utils.TokenUtils
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -15,8 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class AuthenticationFilter(
-    @param:Value($$"${authentication.access-token-secret}")
-    private val secret: String,
+    private val tokenUtils: TokenUtils
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -36,7 +34,7 @@ class AuthenticationFilter(
             ) {
                 val token = authorizationHeader.substringAfter(BEARER).trim()
 
-                val authentication = handleAccessToken(token)
+                val authentication = MagiAuthentication(tokenUtils.getInformation(token))
                 SecurityContextHolder.getContext().authentication = authentication
             }
         } catch (e: AuthorizationException) {
@@ -52,18 +50,6 @@ class AuthenticationFilter(
         val route = HttpMethod.valueOf(request.method) to request.servletPath
 
         return route in publicRoutes
-    }
-
-    private fun handleAccessToken(token: String): MagiAuthentication {
-        val claims = TokenUtils.getClaims(token, secret)
-        val userId = claims.subject
-        val roles = claims.getStringListClaim("roles")
-
-        return MagiAuthentication(
-            userId = userId,
-            roles = roles,
-            token = token,
-        )
     }
 
     companion object {

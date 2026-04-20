@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.unit.resources
+package com.kaiqkt.magiapi.resources
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper

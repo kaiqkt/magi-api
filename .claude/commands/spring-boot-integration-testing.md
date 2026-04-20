@@ -171,7 +171,7 @@ When an endpoint calls an external HTTP API, mock it using a dedicated helper th
 
 **How it works:**
 - `MockServerHolder` is an abstract class that starts a `ClientAndServer` singleton on port 8081.
-- Each external API gets its own object helper (e.g., `GithubHelper`) that extends `MockServerHolder` and lives under `src/test/kotlin/.../integration/resources/`.
+- Each external API gets its own object helper (e.g., `GithubHelper`) that extends `MockServerHolder` and lives under `src/test/kotlin/.../resources/`.
 - The test `application.yml` must point the API client base URL to `http://127.0.0.1:8081`.
 - `IntegrationTest.beforeEach` must call `<Helper>.reset()` to clear recorded expectations between tests.
 

@@ -1,10 +1,11 @@
-package com.kaiqkt.magiapi.integration.resources
+package com.kaiqkt.magiapi.resources
 
 import com.kaiqkt.magiapi.resources.github.responses.GithubRepositoryResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
-import com.kaiqkt.magiapi.unit.resources.MockServerHolder
+import com.kaiqkt.magiapi.resources.MockServerHolder
 import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpResponse
+import org.mockserver.model.MediaType
 import org.springframework.http.HttpStatus
 
 object GithubHelper : MockServerHolder() {
@@ -20,7 +21,7 @@ object GithubHelper : MockServerHolder() {
             .respond(
                 HttpResponse.response()
                     .withStatusCode(HttpStatus.OK.value())
-                    .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
+                    .withContentType(MediaType.APPLICATION_JSON)
                     .withBody(objectMapper.writeValueAsString(response)),
             )
     }
@@ -48,7 +49,7 @@ object GithubHelper : MockServerHolder() {
             .respond(
                 HttpResponse.response()
                     .withStatusCode(HttpStatus.CREATED.value())
-                    .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
+                    .withContentType(MediaType.APPLICATION_JSON)
                     .withBody(objectMapper.writeValueAsString(response)),
             )
     }

@@ -15,7 +15,7 @@ Platform API for managing AI agents — handles user auth, project/team manageme
 | Auth | nimbus-jose-jwt 10.5 (HS256 JWT) |
 | WebSocket | Spring WebSocket (built-in) |
 | Metrics | Micrometer + Prometheus |
-| Infra | Docker (no compose file — run PostgreSQL manually) |
+| Infra | Docker Compose (`docker-compose.yml` — runs PostgreSQL on port 5432) |
 
 ## How to Run
 
@@ -53,7 +53,8 @@ src/main/kotlin/com/kaiqkt/magiapi/
       requests/       → request DTOs
       responses/      → response DTOs
   domain/
-    dtos/             → AuthenticationDto, GitUserDto
+    config/           → AuthenticationProperties (@ConfigurationProperties — exception to domain purity)
+    dtos/             → AuthenticationDto, TokenDto, GitUserDto
     exceptions/       → DomainException, ErrorType
     gateways/         → GitGateway (interface)
     models/           → JPA entities + enums
@@ -65,7 +66,8 @@ src/main/kotlin/com/kaiqkt/magiapi/
       impl/           → GithubGatewayImpl
       responses/      → GithubUserResponse
     exceptions/       → UnexpectedResourceException
-  utils/              → TokenUtils, PasswordEncrypt, MetricsUtils
+  ext/                → String extensions (slugify)
+  utils/              → TokenUtils (@Component, JWT), MetricsUtils (@Component, Micrometer), PasswordEncrypt
 ```
 
 ### Architecture

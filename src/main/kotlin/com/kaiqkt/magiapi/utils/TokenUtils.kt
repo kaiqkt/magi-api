@@ -1,6 +1,8 @@
 package com.kaiqkt.magiapi.utils
 
+import com.kaiqkt.magiapi.domain.config.AuthenticationProperties
 import com.kaiqkt.magiapi.domain.dtos.AuthenticationDto
+import com.kaiqkt.magiapi.domain.dtos.TokenDto
 import com.kaiqkt.magiapi.domain.exceptions.AuthorizationException
 import com.kaiqkt.magiapi.domain.models.enums.Role
 import com.nimbusds.jose.JOSEObjectType
@@ -10,48 +12,49 @@ import com.nimbusds.jose.crypto.MACSigner
 import com.nimbusds.jose.crypto.MACVerifier
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 import java.security.SecureRandom
 import java.text.ParseException
 import java.time.Instant
 import java.util.Base64
 import java.util.Date
 
-
-object TokenUtils {
-    private const val APPLICATION = "magi"
+@Component
+class TokenUtils(
+    private val properties: AuthenticationProperties,
+    @param:Value("\${spring.application.name}")
+    private val applicationName: String,
+) {
     private val secureRandom = SecureRandom()
 
     fun issueTokens(
-        subject: String,
-        ttl: Long,
+        userId: String,
         roles: Set<Role>,
-        secret: String,
     ): AuthenticationDto {
-        val accessToken = signJWT(subject, ttl, roles, secret)
+        val accessToken = sign(userId, roles)
 
         return AuthenticationDto(
             accessToken = accessToken,
-            expiresIn = ttl.toInt(),
+            expiresIn = properties.accessTokenTtl.toInt(),
         )
     }
 
-    fun signJWT(
+    fun sign(
         subject: String,
-        ttl: Long,
         roles: Set<Role>,
-        secret: String,
     ): String {
         val now = Instant.now()
 
         val claims =
             JWTClaimsSet
                 .Builder()
-                .issuer(APPLICATION)
+                .issuer(applicationName)
                 .subject(subject)
-                .audience(APPLICATION)
+                .audience(applicationName)
                 .issueTime(Date.from(now))
-                .expirationTime(Date.from(now.plusSeconds(ttl)))
-                .claim("roles", roles.map(Role::name))
+                .expirationTime(Date.from(now.plusSeconds(properties.accessTokenTtl)))
+                .claim(ROLES, roles.map(Role::name))
                 .build()
 
         val header =
@@ -62,26 +65,17 @@ object TokenUtils {
 
         val signedJWT =
             SignedJWT(header, claims).apply {
-                sign(MACSigner(secret.toByteArray()))
+                sign(MACSigner(properties.accessTokenSecret.toByteArray()))
             }
 
         return signedJWT.serialize()
     }
 
-    fun opaqueToken(): String {
-        val bytes = ByteArray(32)
-        secureRandom.nextBytes(bytes)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
-    }
-
-    fun getClaims(
-        token: String,
-        secret: String,
-    ): JWTClaimsSet {
+    fun getInformation(token: String): TokenDto {
         try {
             val signedJWT = SignedJWT.parse(token)
 
-            val verifier = MACVerifier(secret.toByteArray())
+            val verifier = MACVerifier(properties.accessTokenSecret.toByteArray())
             if (!signedJWT.verify(verifier)) {
                 throw AuthorizationException("Invalid access token")
             }
@@ -91,9 +85,24 @@ object TokenUtils {
                 throw AuthorizationException("Expired access token")
             }
 
-            return jwtClaimsSet
+            return TokenDto(
+                userId = jwtClaimsSet.subject,
+                roles = jwtClaimsSet.getStringListClaim("roles").map { Role.valueOf(it) },
+                expiration = jwtClaimsSet.expirationTime,
+                token = token,
+            )
         } catch (_: ParseException) {
             throw AuthorizationException("Invalid access token")
         }
+    }
+
+    fun opaqueToken(): String {
+        val bytes = ByteArray(32)
+        secureRandom.nextBytes(bytes)
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+    }
+
+    companion object {
+        private const val ROLES = "roles"
     }
 }

@@ -6,7 +6,7 @@ import com.kaiqkt.magiapi.domain.models.Project
 import com.kaiqkt.magiapi.domain.models.ProjectMembership
 import com.kaiqkt.magiapi.domain.models.User
 import com.kaiqkt.magiapi.domain.models.enums.MemberRole
-import com.kaiqkt.magiapi.integration.resources.GithubHelper
+import com.kaiqkt.magiapi.resources.GithubHelper
 import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType

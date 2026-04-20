@@ -17,7 +17,8 @@ import org.springframework.stereotype.Service
 class ServerService(
     private val projectService: ProjectService,
     private val serverRepository: ServerRepository,
-    private val metricsUtils: MetricsUtils
+    private val metricsUtils: MetricsUtils,
+    private val tokenUtils: TokenUtils
 ) {
     fun create(userId: String, tenantId: String, environment: Environment): Server {
         val (project, _) = projectService.resolveAuthorizedMember(tenantId, userId)
@@ -29,7 +30,7 @@ class ServerService(
         val server = Server(
             projectId = project.id,
             environment = environment,
-            agentToken = TokenUtils.opaqueToken()
+            agentToken = tokenUtils.opaqueToken()
         )
 
         serverRepository.save(server)

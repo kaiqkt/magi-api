@@ -1,7 +1,7 @@
 package com.kaiqkt.magiapi.application.web.requests
 
 import com.kaiqkt.magiapi.domain.dtos.ApplicationDto
-import com.kaiqkt.magiapi.utils.slugify
+import com.kaiqkt.magiapi.ext.slugify
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size

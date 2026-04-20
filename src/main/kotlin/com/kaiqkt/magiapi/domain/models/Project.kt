@@ -4,7 +4,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import com.github.f4b6a3.ulid.UlidCreator
-import com.kaiqkt.magiapi.utils.slugify
+import com.kaiqkt.magiapi.ext.slugify
 import java.time.LocalDateTime
 
 @Entity
