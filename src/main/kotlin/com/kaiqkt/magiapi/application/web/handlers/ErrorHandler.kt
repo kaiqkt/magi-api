@@ -79,6 +79,8 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
             ErrorType.INVALID_GIT_ACCESS_TOKEN -> HttpStatus.UNAUTHORIZED
             ErrorType.SERVER_ALREADY_EXISTS -> HttpStatus.CONFLICT
             ErrorType.GIT_ACCOUNT_NOT_FOUND -> HttpStatus.NOT_FOUND
+            ErrorType.APPLICATION_NOT_FOUND -> HttpStatus.NOT_FOUND
+            ErrorType.APPLICATION_ALREADY_EXIST -> HttpStatus.CONFLICT
         }
     }
 }

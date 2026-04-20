@@ -17,7 +17,7 @@ class ServerController(
     @PostMapping("/v1/servers")
     fun create(@RequestParam("env") environment: Environment): ResponseEntity<ServerResponse.Created> {
         val userId = SecurityContext.getUserId()
-        val tenantId = TenantContext.getTenant() ?: return ResponseEntity.badRequest().build()
+        val tenantId = TenantContext.getTenant()
 
         val server = serverService.create(userId, tenantId, environment)
 

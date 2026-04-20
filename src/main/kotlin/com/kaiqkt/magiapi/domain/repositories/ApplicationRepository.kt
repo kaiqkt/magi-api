@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ApplicationRepository: JpaRepository<Application, String> {
+    fun existsByNameAndProjectId(name: String, projectId: String): Boolean
 }

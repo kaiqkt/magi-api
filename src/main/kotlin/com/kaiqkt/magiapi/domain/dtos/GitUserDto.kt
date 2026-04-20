@@ -1,6 +1,9 @@
 package com.kaiqkt.magiapi.domain.dtos
 
-data class GitUserDto(
-    val username: String,
-    val profileUrl: String,
-)
+sealed class GitUserDto {
+    data class Success(
+        val username: String,
+        val profileUrl: String,
+    ): GitUserDto()
+    object InvalidAccessToken: GitUserDto()
+}

@@ -8,7 +8,7 @@ object TenantContext {
         currentTenant.set(tenant)
     }
 
-    fun getTenant(): String? = currentTenant.get()
+    fun getTenant(): String = currentTenant.get()
 
     fun clear() {
         currentTenant.remove()

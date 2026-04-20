@@ -3,6 +3,7 @@ package com.kaiqkt.magiapi.application.web.requests
 import com.kaiqkt.magiapi.domain.models.User
 import com.kaiqkt.magiapi.utils.PasswordEncrypt
 import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
@@ -10,6 +11,7 @@ sealed class UserRequest {
     data class Create(
         @field:Size(message = "must not exceed 100 characters", max = 100)
         @field:Pattern(regexp = "^[A-Za-z ]+$", message = "must contain only letters and spaces")
+        @field:NotBlank(message = "must not be blank")
         val name: String,
         @field:Email(message = "must be a valid email")
         val email: String,

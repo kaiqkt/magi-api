@@ -85,6 +85,27 @@ class UserIntegrationTest : IntegrationTest() {
             }
 
             @Test
+            fun `given a request with blank name when creating user then return 400 bad request`() {
+                val request = UserRequest.Create(
+                    name = "   ",
+                    email = "john@example.com",
+                    password = "Secret123!",
+                )
+
+                val response = given()
+                    .contentType(ContentType.JSON)
+                    .body(request)
+                    .post("/v1/users")
+                    .then()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("Invalid method arguments", response.message)
+                assertEquals("must not be blank", response.details["name"])
+            }
+
+            @Test
             fun `given a request with invalid email format when creating user then return 400 bad request`() {
                 val request = UserRequest.Create(
                     name = "John Doe",

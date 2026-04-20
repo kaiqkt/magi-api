@@ -14,7 +14,9 @@ enum class ErrorType {
     EXPIRED_ACCESS_TOKEN,
     INVALID_GIT_ACCESS_TOKEN,
     SERVER_ALREADY_EXISTS,
-    GIT_ACCOUNT_NOT_FOUND;
+    GIT_ACCOUNT_NOT_FOUND,
+    APPLICATION_ALREADY_EXIST,
+    APPLICATION_NOT_FOUND;
 
     val message: String = toString().lowercase(getDefault()).replace("_", " ")
 }

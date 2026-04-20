@@ -20,18 +20,9 @@ class ServerService(
     private val metricsUtils: MetricsUtils
 ) {
     fun create(userId: String, tenantId: String, environment: Environment): Server {
-        val project = projectService.findByTenantId(tenantId)
-        val membership = projectService.findMembership(project.id, userId)
-
-        if (!membership.hasPermission()) {
-            metricsUtils.counter(SERVER, STATUS, "insufficient_permissions")
-
-            throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
-        }
+        val (project, _) = projectService.resolveAuthorizedMembership(tenantId, userId)
 
         if (serverRepository.existsByProjectIdAndEnvironment(project.id, environment)) {
-            metricsUtils.counter(SERVER, STATUS, "server_already_exists", "environment", environment.name)
-
             throw DomainException(ErrorType.SERVER_ALREADY_EXISTS)
         }
 

@@ -74,6 +74,7 @@ CREATE TABLE applications
 (
     id             VARCHAR(26)  NOT NULL,
     name           VARCHAR(50)  NOT NULL,
+    status         VARCHAR(25)  NOT NULL,
     description    VARCHAR(255),
     repository_url VARCHAR(255) NOT NULL,
     project_id     VARCHAR(26)  NOT NULL,

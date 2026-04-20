@@ -29,7 +29,7 @@ class ProjectController(
     @PostMapping("/v1/projects/invite/{user_id}")
     fun invite(@PathVariable("user_id") guestId: String): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
-        val tenantId = TenantContext.getTenant() ?: return ResponseEntity.badRequest().build()
+        val tenantId = TenantContext.getTenant()
 
         projectService.invite(userId, tenantId, guestId)
 
@@ -39,7 +39,7 @@ class ProjectController(
     @PutMapping("/v1/projects/git")
     fun createGitAccount(@RequestParam("access_token") accessToken: String): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
-        val tenantId = TenantContext.getTenant() ?: return ResponseEntity.badRequest().build()
+        val tenantId = TenantContext.getTenant()
 
         projectService.createGitAccount(userId, tenantId, accessToken)
 

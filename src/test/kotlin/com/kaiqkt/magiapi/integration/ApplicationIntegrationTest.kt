@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import kotlin.test.Test
+import com.kaiqkt.magiapi.domain.models.Application
+import com.kaiqkt.magiapi.domain.models.enums.ApplicationStatus
 
 class ApplicationIntegrationTest : IntegrationTest() {
 
@@ -100,6 +102,25 @@ class ApplicationIntegrationTest : IntegrationTest() {
             }
 
             @Test
+            fun `given a request with blank name when creating application then return 400 bad request`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+
+                val response = given()
+                    .contentType(ContentType.JSON)
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .body(ApplicationRequest.Create(name = "   ", description = null))
+                    .post("/v1/applications")
+                    .then()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("Invalid method arguments", response.message)
+                assertEquals("must not be blank", response.details["name"])
+            }
+
+            @Test
             fun `given a request without tenant when creating application then return 400 bad request`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
 
@@ -178,6 +199,31 @@ class ApplicationIntegrationTest : IntegrationTest() {
             }
 
             @Test
+            fun `given an application with the same name in the project when creating application then return 409 conflict`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                )
+                applicationRepository.save(
+                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                )
+
+                val response = given()
+                    .contentType(ContentType.JSON)
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .body(ApplicationRequest.Create(name = "My App", description = null))
+                    .post("/v1/applications")
+                    .then()
+                    .statusCode(HttpStatus.SC_CONFLICT)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("application already exist", response.message)
+            }
+
+            @Test
             fun `given a project without git account when creating application then return 404 not found`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
                 val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
@@ -215,7 +261,7 @@ class ApplicationIntegrationTest : IntegrationTest() {
                     GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
                 )
                 GithubHelper.mockCreateRepositorySuccessfully(
-                    GithubRepositoryResponse(htmlUrl = "https://github.com/github-user/my-app")
+                    GithubRepositoryResponse(htmlUrl = "https://github.com/github-user/my-project_my-app")
                 )
 
                 given()
@@ -230,10 +276,224 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 val applications = applicationRepository.findAll()
                 assertEquals(1, applications.size)
                 val application = applications.first()
-                assertEquals("My App", application.name)
+                assertEquals("my-app", application.name)
                 assertEquals("My application description", application.description)
-                assertEquals("https://github.com/github-user/my-app", application.repositoryUrl)
+                assertEquals("https://github.com/github-user/my-project_my-app", application.repositoryUrl)
                 assertEquals(project.id, application.projectId)
+            }
+        }
+    }
+
+    @Nested
+    inner class CiWorkflowProvisioning {
+
+        @Nested
+        inner class Auth {
+
+            @Test
+            fun `given an unauthenticated request when provisioning ci workflow then return 401 unauthorized`() {
+                given()
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/any-id/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
+            }
+        }
+
+        @Nested
+        inner class RequestValidation {
+
+            @Test
+            fun `given a request without tenant when provisioning ci workflow then return 400 bad request`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+
+                given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .post("/v1/applications/any-id/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST)
+            }
+        }
+
+        @Nested
+        inner class BusinessRules {
+
+            @Test
+            fun `given a non-existent project when provisioning ci workflow then return 404 not found`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "unknown-project.localhost.com")
+                    .post("/v1/applications/any-id/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_NOT_FOUND)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("project not found", response.message)
+            }
+
+            @Test
+            fun `given a requester without membership when provisioning ci workflow then return 404 not found`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+                val requester = userRepository.save(User(email = "requester@example.com", passwordHash = "hash", name = "Requester"))
+                projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(requester.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/any-id/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_NOT_FOUND)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("membership not found", response.message)
+            }
+
+            @Test
+            fun `given a requester with member role when provisioning ci workflow then return 403 forbidden`() {
+                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+                val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER, status = MemberStatus.ACTIVE)
+                )
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(member.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/any-id/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_FORBIDDEN)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("insufficient permission", response.message)
+            }
+
+            @Test
+            fun `given a non-existent application when provisioning ci workflow then return 404 not found`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                )
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/non-existent-id/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_NOT_FOUND)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("application not found", response.message)
+            }
+
+            @Test
+            fun `given a project without git account when provisioning ci workflow then return 404 not found`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                )
+                val application = applicationRepository.save(
+                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                )
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/${application.id}/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_NOT_FOUND)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("git account not found", response.message)
+            }
+
+            @Test
+            fun `given an invalid git access token when provisioning ci workflow then return 401 unauthorized`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                )
+                gitAccountRepository.save(
+                    GitAccount(projectId = project.id, username = "github-user", accessToken = "expired-token")
+                )
+                val application = applicationRepository.save(
+                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                )
+                GithubHelper.mockUploadContentUnauthorized()
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/${application.id}/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("invalid git access token", response.message)
+            }
+        }
+
+        @Nested
+        inner class HappyPath {
+
+            @ParameterizedTest
+            @EnumSource(MemberRole::class, names = ["OWNER", "ADMIN"])
+            fun `given a valid request when provisioning ci workflow then return 204`(role: MemberRole) {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = user.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
+                )
+                gitAccountRepository.save(
+                    GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
+                )
+                val application = applicationRepository.save(
+                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                )
+                GithubHelper.mockUploadContentSuccessfully()
+
+                given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/${application.id}/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_NO_CONTENT)
+            }
+
+            @Test
+            fun `given an already initialized application when provisioning ci workflow then return 204 without uploading`() {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                membershipRepository.save(
+                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                )
+                gitAccountRepository.save(
+                    GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
+                )
+                val application = applicationRepository.save(
+                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app", status = ApplicationStatus.CREATED)
+                )
+
+                given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .header("Host", "my-project.localhost.com")
+                    .post("/v1/applications/${application.id}/ci")
+                    .then()
+                    .statusCode(HttpStatus.SC_NO_CONTENT)
+
+                val saved = applicationRepository.findById(application.id).get()
+                assertEquals(ApplicationStatus.CREATED, saved.status)
             }
         }
     }

@@ -16,7 +16,6 @@ class UserService(
 ) {
     fun create(user: User) {
         if (userRepository.existsByEmail(user.email)) {
-            metricsUtils.counter(USER, STATUS, "email_already_in_use")
             throw DomainException(ErrorType.EMAIL_ALREADY_EXISTS)
         }
 

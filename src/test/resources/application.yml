@@ -13,4 +13,5 @@ authentication:
   access-token-secret: k2p4/4gX5h0x/1B9Y9O2VJ6ZcfjWQmV5UQJ4cZP9YvE=
 
 github:
-  url: http://127.0.0.1:8081
+  url: http://127.0.0.1:8081/github
+  content-path: .github/workflows/magi-ci.yml

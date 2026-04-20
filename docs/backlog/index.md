@@ -8,9 +8,11 @@
 | Feature | Context | Todo | In Progress | Done |
 |---------|---------|------|-------------|------|
 | backend | agent | 5 | 0 | 0 |
-| backend | applications | 1 | 0 | 3 |
+| backend | applications | 2 | 0 | 2 |
 | backend | build | 3 | 0 | 0 |
 | backend | deployments | 4 | 0 | 0 |
+| backend | memberships | 1 | 0 | 0 |
+| backend | refactoring | 1 | 0 | 0 |
 | backend | services | 4 | 0 | 0 |
 
 ## Features
@@ -20,4 +22,6 @@
 - [applications](backend/applications/tasks.md)
 - [build](backend/build/tasks.md)
 - [deployments](backend/deployments/tasks.md)
+- [memberships](backend/memberships/tasks.md)
+- [refactoring](backend/refactoring/tasks.md)
 - [services](backend/services/tasks.md)

@@ -23,7 +23,6 @@ class ProjectService(
 
     fun create(project: Project) {
         if (projectRepository.existsByTenantId(project.tenantId)) {
-            metricsUtils.counter(PROJECT, STATUS, "project_name_already_in_use")
             throw DomainException(ErrorType.PROJECT_ALREADY_EXIST)
         }
 
@@ -41,15 +40,9 @@ class ProjectService(
         metricsUtils.counter(PROJECT, STATUS, CREATED)
     }
 
+    //voltar aqui - pulando a etapa de invite
     fun invite(userId: String, tenantId: String, guestId: String) {
-        val project = findByTenantId(tenantId)
-        val membership = findMembership(project.id, userId)
-
-        if (!membership.hasPermission()) {
-            metricsUtils.counter(PROJECT_INVITE, STATUS, "insufficient_permissions")
-
-            throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
-        }
+        val (project, _) = resolveAuthorizedMembership(tenantId, userId)
 
         val newMembership = ProjectMembership(
             userId = guestId,
@@ -63,24 +56,22 @@ class ProjectService(
         membershipRepository.save(newMembership)
     }
 
-    fun findByTenantId(tenantId: String): Project {
-        return projectRepository.findByTenantId(tenantId) ?: throw DomainException(ErrorType.PROJECT_NOT_FOUND)
-    }
-
-    fun findMembership(projectId: String, userId: String): ProjectMembership {
-       return membershipRepository.findByUserIdAndProjectId(userId, projectId)
+    fun resolveAuthorizedMembership(tenantId: String, userId: String): Pair<Project, ProjectMembership> {
+        val project = projectRepository.findByTenantId(tenantId)
+            ?: throw DomainException(ErrorType.PROJECT_NOT_FOUND)
+        val membership = membershipRepository.findByUserIdAndProjectId(userId, project.id)
             ?: throw DomainException(ErrorType.MEMBERSHIP_NOT_FOUND)
+
+        if (membership.role in setOf(MemberRole.OWNER, MemberRole.ADMIN)) {
+            return Pair(project, membership)
+        }
+
+        metricsUtils.counter(PROJECT, STATUS, "insufficient_permissions")
+        throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
     }
 
     fun createGitAccount(userId: String, tenantId: String, accessToken: String) {
-        val project = findByTenantId(tenantId)
-        val membership = findMembership(project.id, userId)
-
-        if (!membership.hasPermission()) {
-            metricsUtils.counter(PROJECT_GIT_ACCOUNT, STATUS, "insufficient_permissions")
-
-            throw DomainException(ErrorType.INSUFFICIENT_PERMISSION)
-        }
+        val (project, _) = resolveAuthorizedMembership(tenantId, userId)
 
         gitService.createAccount(accessToken, project.id)
     }

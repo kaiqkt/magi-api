@@ -57,5 +57,6 @@ class MetricsUtils(
     companion object {
         const val STATUS = "status"
         const val CREATED = "created"
+        const val ERROR = "error"
     }
 }

@@ -24,6 +24,4 @@ class ProjectMembership(
     @Enumerated(EnumType.STRING)
     val status: MemberStatus = MemberStatus.INVITED,
     val createdAt: LocalDateTime = LocalDateTime.now(),
-) {
-    fun hasPermission(): Boolean = this.role in setOf(MemberRole.OWNER, MemberRole.ADMIN)
-}
+)

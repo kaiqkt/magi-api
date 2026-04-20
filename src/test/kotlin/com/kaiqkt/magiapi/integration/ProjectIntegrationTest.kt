@@ -14,6 +14,8 @@ import io.restassured.http.ContentType
 import org.apache.http.HttpStatus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import kotlin.test.Test
 
 class ProjectIntegrationTest : IntegrationTest() {
@@ -42,6 +44,26 @@ class ProjectIntegrationTest : IntegrationTest() {
 
                 assertEquals("Invalid method arguments", response.message)
                 assertEquals("must not exceed 50 characters", response.details["name"])
+            }
+
+            @Test
+            fun `given a request with blank name when creating project then return 400 bad request`() {
+                val user = userRepository.save(User(email = "john@example.com", passwordHash = "hash", name = "John Doe"))
+
+                val request = ProjectRequest.Create(name = "   ")
+
+                val response = given()
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
+                    .contentType(ContentType.JSON)
+                    .body(request)
+                    .post("/v1/projects")
+                    .then()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("Invalid method arguments", response.message)
+                assertEquals("must not be blank", response.details["name"])
             }
 
             @Test
@@ -239,17 +261,18 @@ class ProjectIntegrationTest : IntegrationTest() {
         @Nested
         inner class HappyPath {
 
-            @Test
-            fun `given a requester with owner role when inviting user then return 204 and persist membership`() {
-                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
+            @ParameterizedTest
+            @EnumSource(MemberRole::class, names = ["OWNER", "ADMIN"])
+            fun `given a valid requester when inviting user then return 204 and persist membership`(role: MemberRole) {
+                val requester = userRepository.save(User(email = "requester@example.com", passwordHash = "hash", name = "Requester"))
                 val guest = userRepository.save(User(email = "guest@example.com", passwordHash = "hash", name = "Guest"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = requester.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = requester.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
                 )
 
                 given()
-                    .header("Authorization", "Bearer ${generateToken(owner.id)}")
+                    .header("Authorization", "Bearer ${generateToken(requester.id)}")
                     .header("Host", "my-project.localhost.com")
                     .post("/v1/projects/invite/${guest.id}")
                     .then()
@@ -378,18 +401,19 @@ class ProjectIntegrationTest : IntegrationTest() {
         @Nested
         inner class HappyPath {
 
-            @Test
-            fun `given a valid github access token and owner membership when creating git account then return 204 and persist git account`() {
-                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
+            @ParameterizedTest
+            @EnumSource(MemberRole::class, names = ["OWNER", "ADMIN"])
+            fun `given a valid github access token when creating git account then return 204 and persist git account`(role: MemberRole) {
+                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
+                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
                 membershipRepository.save(
-                    ProjectMembership(userId = owner.id, projectId = project.id, role = MemberRole.OWNER, status = MemberStatus.ACTIVE)
+                    ProjectMembership(userId = user.id, projectId = project.id, role = role, status = MemberStatus.ACTIVE)
                 )
                 val githubUser = GithubUserResponse(login = "octocat", htmlUrl = "https://github.com/octocat")
                 GithubHelper.mockGetUserSuccessfully(githubUser)
 
                 given()
-                    .header("Authorization", "Bearer ${generateToken(owner.id)}")
+                    .header("Authorization", "Bearer ${generateToken(user.id)}")
                     .header("Host", "my-project.localhost.com")
                     .put("/v1/projects/git?access_token=valid-token")
                     .then()
