@@ -2,7 +2,7 @@
 
 > Status: draft
 > Created: 2026-04-17
-> Last updated: 2026-04-17
+> Last updated: 2026-04-20
 
 ---
 
@@ -139,11 +139,17 @@ sequenceDiagram
 
   Note over U,GH: Fluxo de Build (cria versão)
   U->>API: POST /v1/applications/{id}/builds
-  API->>GH: Dispara workflow de build via GitHub API
-  GH->>GH: Build da imagem Docker
-  GH->>GH: Push para GHCR
-  GH->>API: Webhook: build concluído + imageTag
-  API->>DB: INSERT version (imageTag, status=READY)
+  API->>GH: workflow_dispatch + return_run_details=true
+  GH-->>API: { workflow_run_id, run_url }
+  API->>DB: INSERT version (status=BUILDING, workflow_run_id)
+  API-->>U: { versionId }
+
+  loop BuildScheduler a cada 30s
+    API->>DB: SELECT versions WHERE status=BUILDING
+    API->>GH: GET /actions/runs/{workflow_run_id}
+    GH-->>API: { status, conclusion, ... }
+    API->>DB: UPDATE status = READY | FAILED
+  end
 
   Note over U,A: Fluxo de Deploy (requer versão existente)
   U->>API: POST /v1/deployments (versionId, serverId)
@@ -212,6 +218,7 @@ erDiagram
   APPLICATION_VERSION {
     varchar(26) id PK
     varchar(26) application_id FK
+    varchar workflow_run_id
     varchar image_tag
     enum status "BUILDING|READY|FAILED"
     timestamp created_at
@@ -282,7 +289,7 @@ stateDiagram-v2
 - **SQL (PostgreSQL)** para tudo: os dados são relacionais e a escala (~3.000 servidores) não justifica NoSQL. Consistência importa — eventos, deploys e memberships são transacionais.
 - **IDs em ULID**: ordenação natural por tempo sem hotspot de índice.
 - **`events.data` como JSON**: payload variável por tipo de evento sem migrações para cada novo tipo.
-- **Índices críticos**: `events(server_id, status)` para drenagem de fila; `servers(agent_token)` para autenticação WebSocket; `servers(project_id, environment)` para lookup por tenant.
+- **Índices críticos**: `events(server_id, status)` para drenagem de fila; `servers(agent_token)` para autenticação WebSocket; `servers(project_id, environment)` para lookup por tenant; `application_versions(status)` para o scheduler varrer apenas versões `BUILDING`.
 
 ---
 
@@ -299,7 +306,7 @@ stateDiagram-v2
 | POST | `/v1/projects/git-accounts` | Associar conta GitHub |
 | POST | `/v1/servers?env=DEV` | Registrar servidor (tenant via Host header) |
 | POST | `/v1/applications` | Criar aplicação |
-| POST | `/v1/applications/{id}/builds` | Disparar build |
+| POST | `/v1/applications/{id}/builds` | Disparar build (retorna `versionId`) |
 | POST | `/v1/deployments` | Criar deployment (requer versão) |
 | POST | `/v1/services` | Criar serviço gerenciado |
 | GET | `/v1/servers` | Listar servidores do projeto |
@@ -386,12 +393,12 @@ Sem cache em v1 — o volume não justifica. A adição de cache sem pressão de
 ### Comportamento de degradação
 
 - **Agent offline**: eventos acumulam em `PENDING`. Nenhuma perda de dados. Deploy fica bloqueado até reconexão.
-- **GitHub API indisponível**: build falha com `status=FAILED`; usuário pode re-triggar.
+- **GitHub API indisponível**: scheduler falha no tick e tenta novamente em 30s. Após 30 min sem resposta conclusiva, a versão é marcada como `FAILED` por timeout de segurança; usuário pode re-triggar.
 - **Heartbeat timeout**: server marca como `INACTIVE` após N segundos sem heartbeat. Não cancela eventos pendentes.
 
 ### Observabilidade
 
-- **Métricas** (Micrometer + Prometheus): `ws.connections.active`, `events.pending.total`, `deployments.success`, `deployments.failed`, `agent.heartbeat.last_seen`.
+- **Métricas** (Micrometer + Prometheus): `ws.connections.active`, `events.pending.total`, `deployments.success`, `deployments.failed`, `agent.heartbeat.last_seen`, `build.status` (tags: `status=ready|failed`), `build.scheduler.runs`.
 - **Logs estruturados** (Logstash encoder): `request_id` em todo MDC, `server_id` e `event_id` nos logs do WebSocket handler.
 - **Health check**: `/health` (Spring Actuator) para liveness/readiness.
 
@@ -399,7 +406,7 @@ Sem cache em v1 — o volume não justifica. A adição de cache sem pressão de
 
 ## Open Questions
 
-- [ ] **Triggers de build**: o usuário dispara manualmente ou via webhook no push do GitHub?
+- [x] **Triggers de build**: manual via `POST /v1/applications/{id}/builds`. Conclusão detectada por scheduler (polling a cada 30s via `GET /actions/runs/{run_id}`), sem dependência de webhook externo.
 - [ ] **Rotação do `agent_token`**: por expiração, revogação manual ou automática em caso de comprometimento?
 - [ ] **Escopo do Docker Compose**: o usuário fornece o `compose.yml` inteiro ou o Magi gera a partir da configuração da aplicação?
 - [ ] **Serviços gerenciados**: o agent sobe os serviços no mesmo `compose.yml` da aplicação (como services) ou em stacks separadas?

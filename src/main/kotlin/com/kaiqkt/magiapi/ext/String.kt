@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.utils
+package com.kaiqkt.magiapi.ext
 
 import com.github.slugify.Slugify
 

@@ -23,7 +23,7 @@ import java.util.Date
 @Component
 class TokenUtils(
     private val properties: AuthenticationProperties,
-    @param:Value("\${spring.application.name}")
+    @param:Value($$"${spring.application.name}")
     private val applicationName: String,
 ) {
     private val secureRandom = SecureRandom()
