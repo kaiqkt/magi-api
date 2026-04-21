@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ProjectRepository: JpaRepository<Project, String> {
-    fun existsByTenantId(tenantId: String): Boolean
-    fun findByTenantId(tenantId: String): Project?
+interface ProjectRepository : JpaRepository<Project, String> {
+    fun findByIdAndUserId(id: String, userId: String): Project?
+    fun existsBySlug(slug: String): Boolean
 }

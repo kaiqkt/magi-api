@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.application.security
+package com.kaiqkt.magiapi.application.web.security
 
 import com.kaiqkt.magiapi.domain.dtos.TokenDto
 import org.springframework.security.core.Authentication

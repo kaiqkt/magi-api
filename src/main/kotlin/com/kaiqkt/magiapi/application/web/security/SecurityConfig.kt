@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.application.security
+package com.kaiqkt.magiapi.application.web.security
 
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean

@@ -2,11 +2,11 @@ package com.kaiqkt.magiapi.integration
 
 import com.kaiqkt.magiapi.application.web.requests.ApplicationRequest
 import com.kaiqkt.magiapi.application.web.responses.ErrorResponse
+import com.kaiqkt.magiapi.domain.models.Application
 import com.kaiqkt.magiapi.domain.models.GitAccount
 import com.kaiqkt.magiapi.domain.models.Project
-import com.kaiqkt.magiapi.domain.models.ProjectMembership
 import com.kaiqkt.magiapi.domain.models.User
-import com.kaiqkt.magiapi.domain.models.enums.MemberRole
+import com.kaiqkt.magiapi.domain.models.enums.ApplicationStatus
 import com.kaiqkt.magiapi.resources.GithubHelper
 import com.kaiqkt.magiapi.resources.github.responses.GithubRepositoryResponse
 import io.restassured.RestAssured.given
@@ -14,11 +14,7 @@ import io.restassured.http.ContentType
 import org.apache.http.HttpStatus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 import kotlin.test.Test
-import com.kaiqkt.magiapi.domain.models.Application
-import com.kaiqkt.magiapi.domain.models.enums.ApplicationStatus
 
 class ApplicationIntegrationTest : IntegrationTest() {
 
@@ -32,9 +28,8 @@ class ApplicationIntegrationTest : IntegrationTest() {
             fun `given an unauthenticated request when creating application then return 401 unauthorized`() {
                 given()
                     .contentType(ContentType.JSON)
-                    .header("Host", "my-project.localhost.com")
                     .body(ApplicationRequest.Create(name = "My App", description = null))
-                    .post("/v1/applications")
+                    .post("/v1/projects/any-id/applications")
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED)
             }
@@ -45,14 +40,11 @@ class ApplicationIntegrationTest : IntegrationTest() {
 
             @Test
             fun `given a request with name exceeding max length when creating application then return 400 bad request`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
                 val response = given()
                     .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
+                    .header("Authorization", "Bearer ${generateToken("any-user-id")}")
                     .body(ApplicationRequest.Create(name = "A".repeat(51), description = null))
-                    .post("/v1/applications")
+                    .post("/v1/projects/any-id/applications")
                     .then()
                     .statusCode(HttpStatus.SC_BAD_REQUEST)
                     .extract()
@@ -63,15 +55,28 @@ class ApplicationIntegrationTest : IntegrationTest() {
             }
 
             @Test
-            fun `given a request with name containing invalid characters when creating application then return 400 bad request`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
+            fun `given a request with blank name when creating application then return 400 bad request`() {
                 val response = given()
                     .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .body(ApplicationRequest.Create(name = "app-123!", description = null))
-                    .post("/v1/applications")
+                    .header("Authorization", "Bearer ${generateToken("any-user-id")}")
+                    .body(ApplicationRequest.Create(name = "   ", description = null))
+                    .post("/v1/projects/any-id/applications")
+                    .then()
+                    .statusCode(HttpStatus.SC_BAD_REQUEST)
+                    .extract()
+                    .`as`(ErrorResponse::class.java)
+
+                assertEquals("Invalid method arguments", response.message)
+                assertEquals("must not be blank", response.details["name"])
+            }
+
+            @Test
+            fun `given a request with name containing invalid characters when creating application then return 400 bad request`() {
+                val response = given()
+                    .contentType(ContentType.JSON)
+                    .header("Authorization", "Bearer ${generateToken("any-user-id")}")
+                    .body(ApplicationRequest.Create(name = "My App!", description = null))
+                    .post("/v1/projects/any-id/applications")
                     .then()
                     .statusCode(HttpStatus.SC_BAD_REQUEST)
                     .extract()
@@ -83,14 +88,11 @@ class ApplicationIntegrationTest : IntegrationTest() {
 
             @Test
             fun `given a request with description exceeding max length when creating application then return 400 bad request`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
                 val response = given()
                     .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
+                    .header("Authorization", "Bearer ${generateToken("any-user-id")}")
                     .body(ApplicationRequest.Create(name = "My App", description = "D".repeat(256)))
-                    .post("/v1/applications")
+                    .post("/v1/projects/any-id/applications")
                     .then()
                     .statusCode(HttpStatus.SC_BAD_REQUEST)
                     .extract()
@@ -99,38 +101,6 @@ class ApplicationIntegrationTest : IntegrationTest() {
                 assertEquals("Invalid method arguments", response.message)
                 assertEquals("must not exceed 255 characters", response.details["description"])
             }
-
-            @Test
-            fun `given a request with blank name when creating application then return 400 bad request`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
-                val response = given()
-                    .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .body(ApplicationRequest.Create(name = "   ", description = null))
-                    .post("/v1/applications")
-                    .then()
-                    .statusCode(HttpStatus.SC_BAD_REQUEST)
-                    .extract()
-                    .`as`(ErrorResponse::class.java)
-
-                assertEquals("Invalid method arguments", response.message)
-                assertEquals("must not be blank", response.details["name"])
-            }
-
-            @Test
-            fun `given a request without tenant when creating application then return 400 bad request`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
-                given()
-                    .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .body(ApplicationRequest.Create(name = "My App", description = null))
-                    .post("/v1/applications")
-                    .then()
-                    .statusCode(HttpStatus.SC_BAD_REQUEST)
-            }
         }
 
         @Nested
@@ -138,14 +108,11 @@ class ApplicationIntegrationTest : IntegrationTest() {
 
             @Test
             fun `given a non-existent project when creating application then return 404 not found`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
                 val response = given()
                     .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "unknown-project.localhost.com")
+                    .header("Authorization", "Bearer ${generateToken("any-user-id")}")
                     .body(ApplicationRequest.Create(name = "My App", description = null))
-                    .post("/v1/applications")
+                    .post("/v1/projects/non-existent-id/applications")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -155,65 +122,22 @@ class ApplicationIntegrationTest : IntegrationTest() {
             }
 
             @Test
-            fun `given a requester without membership when creating application then return 404 not found`() {
-                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val requester = userRepository.save(User(email = "requester@example.com", passwordHash = "hash", name = "Requester"))
-                projectRepository.save(Project(name = "My Project", createdBy = owner.id))
-
-                val response = given()
-                    .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(requester.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .body(ApplicationRequest.Create(name = "My App", description = null))
-                    .post("/v1/applications")
-                    .then()
-                    .statusCode(HttpStatus.SC_NOT_FOUND)
-                    .extract()
-                    .`as`(ErrorResponse::class.java)
-
-                assertEquals("membership not found", response.message)
-            }
-
-            @Test
-            fun `given a requester with member role when creating application then return 403 forbidden`() {
-                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER)
-                )
-
-                val response = given()
-                    .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer ${generateToken(member.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .body(ApplicationRequest.Create(name = "My App", description = null))
-                    .post("/v1/applications")
-                    .then()
-                    .statusCode(HttpStatus.SC_FORBIDDEN)
-                    .extract()
-                    .`as`(ErrorResponse::class.java)
-
-                assertEquals("insufficient permission", response.message)
-            }
-
-            @Test
             fun `given an application with the same name in the project when creating application then return 409 conflict`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 applicationRepository.save(
-                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                    Application(
+                        name = "my-app",
+                        projectId = project.id,
+                        repositoryUrl = "https://github.com/user/my-project_my-app"
+                    )
                 )
 
                 val response = given()
                     .contentType(ContentType.JSON)
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
                     .body(ApplicationRequest.Create(name = "My App", description = null))
-                    .post("/v1/applications")
+                    .post("/v1/projects/${project.id}/applications")
                     .then()
                     .statusCode(HttpStatus.SC_CONFLICT)
                     .extract()
@@ -225,17 +149,13 @@ class ApplicationIntegrationTest : IntegrationTest() {
             @Test
             fun `given a project without git account when creating application then return 404 not found`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
 
                 val response = given()
                     .contentType(ContentType.JSON)
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
                     .body(ApplicationRequest.Create(name = "My App", description = null))
-                    .post("/v1/applications")
+                    .post("/v1/projects/${project.id}/applications")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -248,27 +168,24 @@ class ApplicationIntegrationTest : IntegrationTest() {
         @Nested
         inner class HappyPath {
 
-            @ParameterizedTest
-            @EnumSource(MemberRole::class, names = ["OWNER", "ADMIN"])
-            fun `given a valid request when creating application then return 204 and persist application`(role: MemberRole) {
+            @Test
+            fun `given a valid request when creating application then return 201 and persist application`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = role)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 gitAccountRepository.save(
-                    GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
+                    GitAccount(
+                        projectId = project.id,
+                        username = "github-user",
+                        accessToken = "valid-token"
+                    )
                 )
-                GithubHelper.mockCreateRepositorySuccessfully(
-                    GithubRepositoryResponse(htmlUrl = "https://github.com/github-user/my-project_my-app")
-                )
+                GithubHelper.mockCreateRepositorySuccessfully(GithubRepositoryResponse(htmlUrl = "https://github.com/github-user/my-project_my-app"))
 
                 given()
                     .contentType(ContentType.JSON)
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
                     .body(ApplicationRequest.Create(name = "My App", description = "My application description"))
-                    .post("/v1/applications")
+                    .post("/v1/projects/${project.id}/applications")
                     .then()
                     .statusCode(HttpStatus.SC_CREATED)
 
@@ -292,25 +209,9 @@ class ApplicationIntegrationTest : IntegrationTest() {
             @Test
             fun `given an unauthenticated request when provisioning ci workflow then return 401 unauthorized`() {
                 given()
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/any-id/ci")
+                    .put("/v1/projects/any-id/applications/any-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED)
-            }
-        }
-
-        @Nested
-        inner class RequestValidation {
-
-            @Test
-            fun `given a request without tenant when provisioning ci workflow then return 400 bad request`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
-                given()
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .put("/v1/applications/any-id/ci")
-                    .then()
-                    .statusCode(HttpStatus.SC_BAD_REQUEST)
             }
         }
 
@@ -319,12 +220,9 @@ class ApplicationIntegrationTest : IntegrationTest() {
 
             @Test
             fun `given a non-existent project when provisioning ci workflow then return 404 not found`() {
-                val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-
                 val response = given()
-                    .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "unknown-project.localhost.com")
-                    .put("/v1/applications/any-id/ci")
+                    .header("Authorization", "Bearer ${generateToken("any-user-id")}")
+                    .put("/v1/projects/non-existent-id/applications/any-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -334,56 +232,13 @@ class ApplicationIntegrationTest : IntegrationTest() {
             }
 
             @Test
-            fun `given a requester without membership when provisioning ci workflow then return 404 not found`() {
-                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val requester = userRepository.save(User(email = "requester@example.com", passwordHash = "hash", name = "Requester"))
-                projectRepository.save(Project(name = "My Project", createdBy = owner.id))
-
-                val response = given()
-                    .header("Authorization", "Bearer ${generateToken(requester.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/any-id/ci")
-                    .then()
-                    .statusCode(HttpStatus.SC_NOT_FOUND)
-                    .extract()
-                    .`as`(ErrorResponse::class.java)
-
-                assertEquals("membership not found", response.message)
-            }
-
-            @Test
-            fun `given a requester with member role when provisioning ci workflow then return 403 forbidden`() {
-                val owner = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val member = userRepository.save(User(email = "member@example.com", passwordHash = "hash", name = "Member"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = owner.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = member.id, projectId = project.id, role = MemberRole.MEMBER)
-                )
-
-                val response = given()
-                    .header("Authorization", "Bearer ${generateToken(member.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/any-id/ci")
-                    .then()
-                    .statusCode(HttpStatus.SC_FORBIDDEN)
-                    .extract()
-                    .`as`(ErrorResponse::class.java)
-
-                assertEquals("insufficient permission", response.message)
-            }
-
-            @Test
             fun `given a non-existent application when provisioning ci workflow then return 404 not found`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
 
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/non-existent-id/ci")
+                    .put("/v1/projects/${project.id}/applications/non-existent-id/ci")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -395,18 +250,18 @@ class ApplicationIntegrationTest : IntegrationTest() {
             @Test
             fun `given a project without git account when provisioning ci workflow then return 404 not found`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 val application = applicationRepository.save(
-                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                    Application(
+                        name = "my-app",
+                        projectId = project.id,
+                        repositoryUrl = "https://github.com/user/my-project_my-app"
+                    )
                 )
 
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/${application.id}/ci")
+                    .put("/v1/projects/${project.id}/applications/${application.id}/ci")
                     .then()
                     .statusCode(HttpStatus.SC_NOT_FOUND)
                     .extract()
@@ -418,22 +273,26 @@ class ApplicationIntegrationTest : IntegrationTest() {
             @Test
             fun `given an invalid git access token when provisioning ci workflow then return 401 unauthorized`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 gitAccountRepository.save(
-                    GitAccount(projectId = project.id, username = "github-user", accessToken = "expired-token")
+                    GitAccount(
+                        projectId = project.id,
+                        username = "github-user",
+                        accessToken = "expired-token"
+                    )
                 )
                 val application = applicationRepository.save(
-                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                    Application(
+                        name = "my-app",
+                        projectId = project.id,
+                        repositoryUrl = "https://github.com/user/my-project_my-app"
+                    )
                 )
                 GithubHelper.mockUploadContentUnauthorized()
 
                 val response = given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/${application.id}/ci")
+                    .put("/v1/projects/${project.id}/applications/${application.id}/ci")
                     .then()
                     .statusCode(HttpStatus.SC_UNAUTHORIZED)
                     .extract()
@@ -446,26 +305,29 @@ class ApplicationIntegrationTest : IntegrationTest() {
         @Nested
         inner class HappyPath {
 
-            @ParameterizedTest
-            @EnumSource(MemberRole::class, names = ["OWNER", "ADMIN"])
-            fun `given a valid request when provisioning ci workflow then return 204`(role: MemberRole) {
+            @Test
+            fun `given a valid request when provisioning ci workflow then return 200 and update application status`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = role)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 gitAccountRepository.save(
-                    GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
+                    GitAccount(
+                        projectId = project.id,
+                        username = "github-user",
+                        accessToken = "valid-token"
+                    )
                 )
                 val application = applicationRepository.save(
-                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app")
+                    Application(
+                        name = "my-app",
+                        projectId = project.id,
+                        repositoryUrl = "https://github.com/user/my-project_my-app"
+                    )
                 )
                 GithubHelper.mockUploadContentSuccessfully()
 
                 given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/${application.id}/ci")
+                    .put("/v1/projects/${project.id}/applications/${application.id}/ci")
                     .then()
                     .statusCode(HttpStatus.SC_OK)
 
@@ -474,23 +336,28 @@ class ApplicationIntegrationTest : IntegrationTest() {
             }
 
             @Test
-            fun `given an already initialized application when provisioning ci workflow then return 204 without uploading`() {
+            fun `given an already initialized application when provisioning ci workflow then return 200 without uploading`() {
                 val user = userRepository.save(User(email = "user@example.com", passwordHash = "hash", name = "User"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
-                membershipRepository.save(
-                    ProjectMembership(userId = user.id, projectId = project.id, role = MemberRole.OWNER)
-                )
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 gitAccountRepository.save(
-                    GitAccount(projectId = project.id, username = "github-user", accessToken = "valid-token")
+                    GitAccount(
+                        projectId = project.id,
+                        username = "github-user",
+                        accessToken = "valid-token"
+                    )
                 )
                 val application = applicationRepository.save(
-                    Application(name = "my-app", projectId = project.id, repositoryUrl = "https://github.com/github-user/my-project_my-app", status = ApplicationStatus.CREATED)
+                    Application(
+                        name = "my-app",
+                        projectId = project.id,
+                        repositoryUrl = "https://github.com/user/my-project_my-app",
+                        status = ApplicationStatus.CREATED
+                    )
                 )
 
                 given()
                     .header("Authorization", "Bearer ${generateToken(user.id)}")
-                    .header("Host", "my-project.localhost.com")
-                    .put("/v1/applications/${application.id}/ci")
+                    .put("/v1/projects/${project.id}/applications/${application.id}/ci")
                     .then()
                     .statusCode(HttpStatus.SC_OK)
 

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.kaiqkt.magiapi.domain.models.enums.Role
 import com.kaiqkt.magiapi.domain.repositories.ApplicationRepository
 import com.kaiqkt.magiapi.domain.repositories.GitAccountRepository
-import com.kaiqkt.magiapi.domain.repositories.ProjectMemberShipRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectRepository
 import com.kaiqkt.magiapi.domain.repositories.ServerRepository
 import com.kaiqkt.magiapi.domain.repositories.UserRepository
@@ -39,9 +38,6 @@ class IntegrationTest {
     lateinit var projectRepository: ProjectRepository
 
     @Autowired
-    lateinit var membershipRepository: ProjectMemberShipRepository
-
-    @Autowired
     lateinit var gitAccountRepository: GitAccountRepository
 
     @Autowired
@@ -71,7 +67,6 @@ class IntegrationTest {
     @BeforeEach
     fun beforeEach() {
         GithubHelper.reset()
-        membershipRepository.deleteAll()
         gitAccountRepository.deleteAll()
         serverRepository.deleteAll()
         applicationRepository.deleteAll()

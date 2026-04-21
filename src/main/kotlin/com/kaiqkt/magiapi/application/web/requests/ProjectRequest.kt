@@ -16,5 +16,5 @@ sealed class ProjectRequest {
 
 fun ProjectRequest.Create.toDomain(userId: String) = Project(
     name = this.name,
-    createdBy = userId
+    userId = userId
 )

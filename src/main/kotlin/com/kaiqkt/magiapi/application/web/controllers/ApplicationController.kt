@@ -1,6 +1,6 @@
 package com.kaiqkt.magiapi.application.web.controllers
 
-import com.kaiqkt.magiapi.application.security.SecurityContext
+import com.kaiqkt.magiapi.application.web.security.SecurityContext
 import com.kaiqkt.magiapi.application.web.requests.ApplicationRequest
 import com.kaiqkt.magiapi.application.web.requests.toDomain
 import com.kaiqkt.magiapi.domain.services.ApplicationService

@@ -24,15 +24,15 @@ class ApplicationService(
     fun create(
         applicationDto: ApplicationDto.Create,
         userId: String,
-        tenantId: String
+        projectId: String
     ) {
-        val (project, _) = projectService.resolveAuthorizedMember(tenantId, userId)
+        val project = projectService.findByIdAndUserId(projectId, userId)
 
         if (applicationRepository.existsByNameAndProjectId(applicationDto.name, project.id)) {
             throw DomainException(ErrorType.APPLICATION_ALREADY_EXIST)
         }
 
-        val repositoryName = "${project.tenantId}_${applicationDto.name}"
+        val repositoryName = "${project.slug}_${applicationDto.name}"
         val repositoryUrl = gitService.createRepository(repositoryName, project.id)
 
         val application = Application(
@@ -47,14 +47,14 @@ class ApplicationService(
     }
 
     @Transactional
-    fun provisionCiWorkflow(applicationId: String, userId: String, tenantId: String) {
-        val (project, _) = projectService.resolveAuthorizedMember(tenantId, userId)
+    fun provisionCiWorkflow(applicationId: String, userId: String, projectId: String) {
+        val project = projectService.findByIdAndUserId(projectId, userId)
 
         val application = applicationRepository.findById(applicationId).getOrNull()
             ?: throw DomainException(ErrorType.APPLICATION_NOT_FOUND)
 
         if (application.status == ApplicationStatus.PENDING_CI_PROVISIONING) {
-            val repositoryName = "${project.tenantId}_${application.name}"
+            val repositoryName = "${project.slug}_${application.name}"
 
             gitService.provisionCiWorkflow(repositoryName, project.id)
 

@@ -13,8 +13,8 @@ class Project(
     @Id
     val id: String = UlidCreator.getMonotonicUlid().toString(),
     val name: String = "",
-    val createdBy: String = "",
+    val userId: String = "",
     val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    val tenantId: String = name.slugify()
+    val slug: String = name.slugify()
 }

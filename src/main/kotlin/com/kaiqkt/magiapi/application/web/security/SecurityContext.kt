@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.application.security
+package com.kaiqkt.magiapi.application.web.security
 
 import org.springframework.security.core.context.SecurityContextHolder
 

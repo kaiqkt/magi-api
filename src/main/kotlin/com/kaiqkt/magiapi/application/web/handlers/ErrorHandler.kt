@@ -1,6 +1,6 @@
 package com.kaiqkt.magiapi.application.web.handlers
 
-import com.kaiqkt.magiapi.application.exceptions.InvalidRequestException
+import com.kaiqkt.magiapi.application.web.exceptions.InvalidRequestException
 import com.kaiqkt.magiapi.application.web.responses.ErrorResponse
 import com.kaiqkt.magiapi.domain.exceptions.DomainException
 import com.kaiqkt.magiapi.domain.exceptions.ErrorType

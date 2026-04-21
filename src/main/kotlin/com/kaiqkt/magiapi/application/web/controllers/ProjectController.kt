@@ -1,7 +1,6 @@
 package com.kaiqkt.magiapi.application.web.controllers
 
-import com.kaiqkt.magiapi.application.security.SecurityContext
-import com.kaiqkt.magiapi.application.web.interceptors.TenantContext
+import com.kaiqkt.magiapi.application.web.security.SecurityContext
 import com.kaiqkt.magiapi.application.web.requests.ProjectRequest
 import com.kaiqkt.magiapi.application.web.requests.toDomain
 import com.kaiqkt.magiapi.domain.services.ProjectService
@@ -27,22 +26,14 @@ class ProjectController(
         return ResponseEntity(HttpStatus.CREATED)
     }
 
-    @PostMapping("/v1/projects/member/{user_id}")
-    fun createMembership(@PathVariable("user_id") guestId: String): ResponseEntity<Unit> {
+    @PutMapping("/v1/projects/{project_id}/git")
+    fun createGitAccount(
+        @PathVariable("project_id") projectId: String,
+        @RequestParam("access_token") accessToken: String
+    ): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
-        val tenantId = TenantContext.getTenant()
 
-        projectService.createMembership(userId, tenantId, guestId)
-
-        return ResponseEntity(HttpStatus.CREATED)
-    }
-
-    @PutMapping("/v1/projects/git")
-    fun createGitAccount(@RequestParam("access_token") accessToken: String): ResponseEntity<Unit> {
-        val userId = SecurityContext.getUserId()
-        val tenantId = TenantContext.getTenant()
-
-        projectService.createGitAccount(userId, tenantId, accessToken)
+        projectService.createGitAccount(userId, projectId, accessToken)
 
         return ResponseEntity(HttpStatus.CREATED)
     }

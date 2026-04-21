@@ -20,8 +20,8 @@ class ServerService(
     private val metricsUtils: MetricsUtils,
     private val tokenUtils: TokenUtils
 ) {
-    fun create(userId: String, tenantId: String, environment: Environment): Server {
-        val (project, _) = projectService.resolveAuthorizedMember(tenantId, userId)
+    fun create(userId: String, projectId: String, environment: Environment): Server {
+        val project = projectService.findByIdAndUserId(projectId, userId)
 
         if (serverRepository.existsByProjectIdAndEnvironment(project.id, environment)) {
             throw DomainException(ErrorType.SERVER_ALREADY_EXISTS)

@@ -11,7 +11,6 @@ import com.kaiqkt.magiapi.resources.github.responses.GithubContentResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubRepositoryResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubWorkflowDispatchResponse
-import com.kaiqkt.magiapi.resources.github.responses.GithubWorkflowRunResponse
 import com.kaiqkt.magiapi.utils.MetricsUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -134,32 +133,6 @@ class GithubClient(
             response.isSuccessful -> mapper.readValue(result.get(), GithubWorkflowDispatchResponse::class.java)
             response.statusCode == 401 || response.statusCode == 403 -> null
             else -> throw UnexpectedResourceException("Fail to trigger workflow ${response.responseMessage}")
-        }
-    }
-
-    fun getWorkflowRun(
-        owner: String,
-        repo: String,
-        runId: Long,
-        accessToken: String,
-    ): GithubWorkflowRunResponse? {
-        val (_, response, result) =
-            metricsUtils.request(GITHUB_GET_WORKFLOW_RUN) {
-                Fuel
-                    .get("$apiUrl/repos/$owner/$repo/actions/runs/$runId")
-                    .header(
-                        mapOf(
-                            "Accept" to "application/vnd.github+json",
-                            "X-GitHub-Api-Version" to "2026-03-10",
-                            "Authorization" to "Bearer $accessToken",
-                        ),
-                    ).response()
-            }
-
-        return when {
-            response.isSuccessful -> mapper.readValue(result.get(), GithubWorkflowRunResponse::class.java)
-            response.statusCode == 401 || response.statusCode == 403 -> null
-            else -> throw UnexpectedResourceException("Fail to get workflow run ${response.responseMessage}")
         }
     }
 

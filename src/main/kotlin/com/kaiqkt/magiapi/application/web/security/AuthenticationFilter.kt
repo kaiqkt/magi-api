@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.application.security
+package com.kaiqkt.magiapi.application.web.security
 
 import com.kaiqkt.magiapi.domain.exceptions.AuthorizationException
 import com.kaiqkt.magiapi.utils.TokenUtils

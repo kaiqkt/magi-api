@@ -11,34 +11,20 @@ CREATE TABLE users
 
 CREATE TABLE projects
 (
-    id         VARCHAR(26) NOT NULL,
-    name       VARCHAR(50) NOT NULL,
-    tenant_id  VARCHAR(50) NOT NULL,
-    created_by VARCHAR(26) NOT NULL,
-    created_at TIMESTAMP   NOT NULL,
+    id         VARCHAR(26)  NOT NULL,
+    name       VARCHAR(50)  NOT NULL,
+    slug       VARCHAR(255) NOT NULL,
+    user_id    VARCHAR(26)  NOT NULL,
+    created_at TIMESTAMP    NOT NULL,
     CONSTRAINT pk_projects PRIMARY KEY (id),
-    CONSTRAINT uq_projects_tenant_id UNIQUE (tenant_id),
-    CONSTRAINT fk_projects_created_by FOREIGN KEY (created_by) REFERENCES users (id)
-);
-
-CREATE TABLE project_memberships
-(
-    id         VARCHAR(26) NOT NULL,
-    user_id    VARCHAR(26) NOT NULL,
-    project_id VARCHAR(26) NOT NULL,
-    role       VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP   NOT NULL,
-    CONSTRAINT pk_project_memberships PRIMARY KEY (id),
-    CONSTRAINT uq_project_memberships_user_project UNIQUE (user_id, project_id),
-    CONSTRAINT fk_project_memberships_user FOREIGN KEY (user_id) REFERENCES users (id),
-    CONSTRAINT fk_project_memberships_project FOREIGN KEY (project_id) REFERENCES projects (id)
+    CONSTRAINT uq_projects_slug UNIQUE (slug),
+    CONSTRAINT fk_projects_user_id FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
 CREATE TABLE git_accounts
 (
     id           VARCHAR(26)  NOT NULL,
     project_id   VARCHAR(26)  NOT NULL,
-    account_type VARCHAR(10)  NOT NULL,
     username     VARCHAR(100) NOT NULL,
     profile_url  VARCHAR(255) NOT NULL,
     access_token TEXT         NOT NULL,
