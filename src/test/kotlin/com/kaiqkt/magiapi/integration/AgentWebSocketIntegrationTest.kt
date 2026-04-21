@@ -61,7 +61,7 @@ class AgentWebSocketIntegrationTest : IntegrationTest() {
             @Test
             fun `given a valid agent token when connecting to agent websocket then set server status to active`() {
                 val user = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 val server = serverRepository.save(Server(projectId = project.id, environment = Environment.DEV, agentToken = "valid-agent-token"))
 
                 val future = client.execute(TextWebSocketHandler(), headersWithToken("valid-agent-token"), wsUri())
@@ -75,7 +75,7 @@ class AgentWebSocketIntegrationTest : IntegrationTest() {
             @Test
             fun `given an established connection when closing it then set server status to inactive`() {
                 val user = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 val server = serverRepository.save(Server(projectId = project.id, environment = Environment.DEV, agentToken = "valid-agent-token"))
 
                 val future = client.execute(TextWebSocketHandler(), headersWithToken("valid-agent-token"), wsUri())
@@ -92,7 +92,7 @@ class AgentWebSocketIntegrationTest : IntegrationTest() {
             @Test
             fun `given an established connection when sending an event then client receives the message`() {
                 val user = userRepository.save(User(email = "owner@example.com", passwordHash = "hash", name = "Owner"))
-                val project = projectRepository.save(Project(name = "My Project", createdBy = user.id))
+                val project = projectRepository.save(Project(name = "My Project", userId = user.id))
                 val server = serverRepository.save(Server(projectId = project.id, environment = Environment.DEV, agentToken = "valid-agent-token"))
 
                 val received = CountDownLatch(1)

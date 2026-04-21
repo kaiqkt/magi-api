@@ -1,7 +1,6 @@
 package com.kaiqkt.magiapi.application.web.controllers
 
 import com.kaiqkt.magiapi.application.security.SecurityContext
-import com.kaiqkt.magiapi.application.web.interceptors.TenantContext
 import com.kaiqkt.magiapi.application.web.requests.ApplicationRequest
 import com.kaiqkt.magiapi.application.web.requests.toDomain
 import com.kaiqkt.magiapi.domain.services.ApplicationService
@@ -19,22 +18,25 @@ class ApplicationController(
     private val applicationService: ApplicationService
 ) {
 
-    @PostMapping("/v1/applications")
-    fun create(@Valid @RequestBody request: ApplicationRequest.Create): ResponseEntity<Unit> {
+    @PostMapping("/v1/projects/{project_id}/applications")
+    fun create(
+        @PathVariable("project_id") projectId: String,
+        @Valid @RequestBody request: ApplicationRequest.Create
+    ): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
-        val tenantId = TenantContext.getTenant()
 
-        applicationService.create(request.toDomain(), userId, tenantId)
+        applicationService.create(request.toDomain(), userId, projectId)
 
         return ResponseEntity(HttpStatus.CREATED)
     }
 
-    @PutMapping("/v1/applications/{application_id}/ci")
-    fun provisionCiWorkflow(@PathVariable("application_id") applicationId: String): ResponseEntity<Unit> {
+    @PutMapping("/v1/projects/{project_id}/applications/{application_id}/ci")
+    fun provisionCiWorkflow(
+        @PathVariable("project_id") projectId: String,
+        @PathVariable("application_id") applicationId: String): ResponseEntity<Unit> {
         val userId = SecurityContext.getUserId()
-        val tenantId = TenantContext.getTenant()
 
-        applicationService.provisionCiWorkflow(applicationId, userId, tenantId)
+        applicationService.provisionCiWorkflow(applicationId, userId, projectId)
 
         return ResponseEntity.ok().build()
     }
