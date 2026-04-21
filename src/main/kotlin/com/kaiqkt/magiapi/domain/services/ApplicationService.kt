@@ -22,7 +22,7 @@ class ApplicationService(
 ) {
 
     fun create(
-        applicationDto: ApplicationDto.Create,
+        applicationDto: ApplicationDto,
         userId: String,
         projectId: String
     ) {

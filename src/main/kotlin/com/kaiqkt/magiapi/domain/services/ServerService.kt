@@ -9,7 +9,6 @@ import com.kaiqkt.magiapi.domain.repositories.ServerRepository
 import com.kaiqkt.magiapi.utils.MetricsUtils
 import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.CREATED
 import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.STATUS
-import com.kaiqkt.magiapi.utils.TokenUtils
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
@@ -18,7 +17,7 @@ class ServerService(
     private val projectService: ProjectService,
     private val serverRepository: ServerRepository,
     private val metricsUtils: MetricsUtils,
-    private val tokenUtils: TokenUtils
+    private val tokenService: TokenService
 ) {
     fun create(userId: String, projectId: String, environment: Environment): Server {
         val project = projectService.findByIdAndUserId(projectId, userId)
@@ -30,7 +29,7 @@ class ServerService(
         val server = Server(
             projectId = project.id,
             environment = environment,
-            agentToken = tokenUtils.opaqueToken()
+            agentToken = tokenService.opaqueToken()
         )
 
         serverRepository.save(server)

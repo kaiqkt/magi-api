@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.utils
+package com.kaiqkt.magiapi.domain.services
 
 import com.kaiqkt.magiapi.domain.config.AuthenticationProperties
 import com.kaiqkt.magiapi.domain.dtos.AuthenticationDto
@@ -21,7 +21,7 @@ import java.util.Base64
 import java.util.Date
 
 @Component
-class TokenUtils(
+class TokenService(
     private val properties: AuthenticationProperties,
     @param:Value($$"${spring.application.name}")
     private val applicationName: String,

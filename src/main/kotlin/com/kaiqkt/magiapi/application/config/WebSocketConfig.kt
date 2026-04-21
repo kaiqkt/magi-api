@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.application.web.config
+package com.kaiqkt.magiapi.application.config
 
 import com.kaiqkt.magiapi.application.web.handlers.AgentWebSocketHandler
 import com.kaiqkt.magiapi.application.web.interceptors.AgentHandshakeInterceptor

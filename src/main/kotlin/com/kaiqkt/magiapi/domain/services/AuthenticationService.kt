@@ -5,7 +5,6 @@ import com.kaiqkt.magiapi.domain.exceptions.DomainException
 import com.kaiqkt.magiapi.domain.exceptions.ErrorType
 import com.kaiqkt.magiapi.utils.MetricsUtils
 import com.kaiqkt.magiapi.utils.MetricsUtils.Companion.STATUS
-import com.kaiqkt.magiapi.utils.TokenUtils
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -14,7 +13,7 @@ class AuthenticationService(
     private val userService: UserService,
     private val metricsUtils: MetricsUtils,
     private val passwordEncoder: PasswordEncoder,
-    private val tokenUtils: TokenUtils,
+    private val tokenService: TokenService,
 ) {
     fun authenticate(email: String, password: String): AuthenticationDto {
         val user = userService.findByEmail(email)
@@ -25,7 +24,7 @@ class AuthenticationService(
             throw DomainException(ErrorType.INVALID_CREDENTIALS)
         }
 
-        val authentication  = tokenUtils.issueTokens(user.id, user.roles)
+        val authentication  = tokenService.issueTokens(user.id, user.roles)
 
         metricsUtils.counter(AUTHENTICATION, STATUS, "authenticated")
 

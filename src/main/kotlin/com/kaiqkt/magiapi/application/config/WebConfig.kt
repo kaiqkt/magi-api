@@ -1,4 +1,4 @@
-package com.kaiqkt.magiapi.application.web.config
+package com.kaiqkt.magiapi.application.config
 
 import com.kaiqkt.magiapi.application.web.interceptors.WebInterceptor
 import org.springframework.context.annotation.Configuration

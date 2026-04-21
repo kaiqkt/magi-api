@@ -7,7 +7,7 @@ import com.kaiqkt.magiapi.domain.repositories.GitAccountRepository
 import com.kaiqkt.magiapi.domain.repositories.ProjectRepository
 import com.kaiqkt.magiapi.domain.repositories.ServerRepository
 import com.kaiqkt.magiapi.domain.repositories.UserRepository
-import com.kaiqkt.magiapi.utils.TokenUtils
+import com.kaiqkt.magiapi.domain.services.TokenService
 import com.kaiqkt.magiapi.resources.GithubHelper
 import io.restassured.RestAssured
 import io.restassured.config.ObjectMapperConfig
@@ -50,7 +50,7 @@ class IntegrationTest {
     lateinit var passwordEncoder: PasswordEncoder
 
     @Autowired
-    lateinit var tokenUtils: TokenUtils
+    lateinit var tokenService: TokenService
 
     @BeforeAll
     fun before() {
@@ -74,5 +74,5 @@ class IntegrationTest {
         userRepository.deleteAll()
     }
 
-    fun generateToken(userId: String): String = tokenUtils.issueTokens(userId, setOf(Role.USER)).accessToken
+    fun generateToken(userId: String): String = tokenService.issueTokens(userId, setOf(Role.USER)).accessToken
 }

@@ -1,7 +1,7 @@
 package com.kaiqkt.magiapi.application.web.security
 
 import com.kaiqkt.magiapi.domain.exceptions.AuthorizationException
-import com.kaiqkt.magiapi.utils.TokenUtils
+import com.kaiqkt.magiapi.domain.services.TokenService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -14,7 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class AuthenticationFilter(
-    private val tokenUtils: TokenUtils
+    private val tokenService: TokenService
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -34,7 +34,7 @@ class AuthenticationFilter(
             ) {
                 val token = authorizationHeader.substringAfter(BEARER).trim()
 
-                val authentication = MagiAuthentication(tokenUtils.getInformation(token))
+                val authentication = MagiAuthentication(tokenService.getInformation(token))
                 SecurityContextHolder.getContext().authentication = authentication
             }
         } catch (e: AuthorizationException) {
