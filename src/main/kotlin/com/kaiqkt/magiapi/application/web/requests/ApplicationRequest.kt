@@ -17,7 +17,7 @@ sealed class ApplicationRequest {
     ) : ApplicationRequest()
 }
 
-fun ApplicationRequest.Create.toDomain() = ApplicationDto.Create(
+fun ApplicationRequest.Create.toDomain() = ApplicationDto(
     name = this.name.slugify(),
     description = this.description
 )

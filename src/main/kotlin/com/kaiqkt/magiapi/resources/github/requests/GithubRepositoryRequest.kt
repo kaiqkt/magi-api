@@ -4,3 +4,5 @@ data class GithubRepositoryRequest(
     val name: String,
     val private: Boolean = true,
 )
+
+//tem como setar a branch default

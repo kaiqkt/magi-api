@@ -14,4 +14,3 @@ authentication:
 
 github:
   url: http://127.0.0.1:8081/github
-  content-path: .github/workflows/magi-ci.yml

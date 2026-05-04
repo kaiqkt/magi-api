@@ -125,7 +125,6 @@ class ProjectIntegrationTest : IntegrationTest() {
                 assertEquals(1, projects.size)
                 val project = projects.first()
                 assertEquals("My Project", project.name)
-                assertEquals("my-project", project.slug)
                 assertEquals(user.id, project.userId)
             }
         }

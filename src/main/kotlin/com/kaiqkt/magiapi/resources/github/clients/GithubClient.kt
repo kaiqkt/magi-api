@@ -10,7 +10,7 @@ import com.kaiqkt.magiapi.resources.github.requests.GithubWorkflowDispatchReques
 import com.kaiqkt.magiapi.resources.github.responses.GithubContentResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubRepositoryResponse
 import com.kaiqkt.magiapi.resources.github.responses.GithubUserResponse
-import com.kaiqkt.magiapi.resources.github.responses.GithubWorkflowDispatchResponse
+import com.kaiqkt.magiapi.resources.github.responses.GithubWorkflowResponse
 import com.kaiqkt.magiapi.utils.MetricsUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -22,9 +22,7 @@ class GithubClient(
     private val metricsUtils: MetricsUtils,
     private val mapper: ObjectMapper,
     @param:Value($$"${github.url}")
-    private val apiUrl: String,
-    @param:Value($$"${github.content-path}")
-    private val contentPath: String
+    private val apiUrl: String
 ) {
     fun getUser(accessToken: String): GithubUserResponse? {
         val (_, response, result) =
@@ -78,13 +76,14 @@ class GithubClient(
     fun uploadContent(
         owner: String,
         repo: String,
+        path: String,
         accessToken: String,
         request: GithubContentRequest
     ): GithubContentResponse? {
         val (_, response, _) =
             metricsUtils.request(GITHUB_CREATE_REPO) {
                 Fuel
-                    .put("$apiUrl/repos/$owner/$repo/contents/$contentPath")
+                    .put("$apiUrl/repos/$owner/$repo/contents/$path")
                     .header(
                         mapOf(
                             "Accept" to "application/vnd.github+json",
@@ -105,36 +104,37 @@ class GithubClient(
         }
     }
 
-    fun triggerWorkflow(
-        owner: String,
-        repo: String,
-        ref: String,
-        accessToken: String,
-    ): GithubWorkflowDispatchResponse? {
-        val workflowId = contentPath.substringAfterLast("/")
-        val request = GithubWorkflowDispatchRequest(ref = ref)
-
-        val (_, response, result) =
-            metricsUtils.request(GITHUB_TRIGGER_WORKFLOW) {
-                Fuel
-                    .post("$apiUrl/repos/$owner/$repo/actions/workflows/$workflowId/dispatches")
-                    .header(
-                        mapOf(
-                            "Accept" to "application/vnd.github+json",
-                            "X-GitHub-Api-Version" to "2026-03-10",
-                            "Content-Type" to MediaType.APPLICATION_JSON,
-                            "Authorization" to "Bearer $accessToken",
-                        ),
-                    ).body(mapper.writeValueAsString(request))
-                    .response()
-            }
-
-        return when {
-            response.isSuccessful -> mapper.readValue(result.get(), GithubWorkflowDispatchResponse::class.java)
-            response.statusCode == 401 || response.statusCode == 403 -> null
-            else -> throw UnexpectedResourceException("Fail to trigger workflow ${response.responseMessage}")
-        }
-    }
+//    fun triggerWorkflow(
+//        owner: String,
+//        repo: String,
+//        ref: String,
+//        accessToken: String,
+//    ): GithubWorkflowResponse {
+//        val workflowId = contentPath.substringAfterLast("/")
+//        val request = GithubWorkflowDispatchRequest(ref = ref)
+//
+//        val (_, response, result) =
+//            metricsUtils.request(GITHUB_TRIGGER_WORKFLOW) {
+//                Fuel
+//                    .post("$apiUrl/repos/$owner/$repo/actions/workflows/$workflowId/dispatches")
+//                    .header(
+//                        mapOf(
+//                            "Accept" to "application/vnd.github+json",
+//                            "X-GitHub-Api-Version" to "2026-03-10",
+//                            "Content-Type" to MediaType.APPLICATION_JSON,
+//                            "Authorization" to "Bearer $accessToken",
+//                        ),
+//                    ).body(mapper.writeValueAsString(request))
+//                    .response()
+//            }
+//
+//        return when {
+//            response.isSuccessful -> mapper.readValue(result.get(), GithubWorkflowResponse.Success::class.java)
+//            response.statusCode == 401 || response.statusCode == 403 -> GithubWorkflowResponse.InvalidAccessToken
+//            response.statusCode == 422 -> GithubWorkflowResponse.ReferenceNotFound
+//            else -> throw UnexpectedResourceException("Fail to trigger workflow ${response.responseMessage}")
+//        }
+//    }
 
     companion object {
         private const val GITHUB_GET_USER = "github_get_user"

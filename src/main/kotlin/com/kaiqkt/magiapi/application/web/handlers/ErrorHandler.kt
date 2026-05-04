@@ -65,6 +65,7 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
     }
 
+    //simplificar isso
     private fun ErrorType.toHttpStatus(): HttpStatus {
         return when (this) {
             ErrorType.EMAIL_ALREADY_EXISTS -> HttpStatus.CONFLICT

@@ -16,4 +16,3 @@ authentication:
 
 github:
   url: https://api.github.com
-  content-path: .github/workflows/magi-ci.yml

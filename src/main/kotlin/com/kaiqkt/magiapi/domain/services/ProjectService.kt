@@ -18,7 +18,7 @@ class ProjectService(
 ) {
 
     fun create(project: Project) {
-        if (projectRepository.existsBySlug(project.slug)) {
+        if (projectRepository.existsByName(project.name)) {
             throw DomainException(ErrorType.PROJECT_ALREADY_EXIST)
         }
 
